@@ -1,3 +1,5 @@
 {
-  "lock": "./deno.lock"
+  "tasks": {
+    "start": "deno run --allow-net main.ts"
+  }
 }
