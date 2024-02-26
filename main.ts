@@ -7,10 +7,10 @@ router
     context.response.body = "Welcome to IBM-SL Api";
   })
   .get("/api", (context) => {
-    console.log("coming soon")
+    context.response.body = "coming soon";
   })
   .get("/api/", (context) => {
-    console.log("coming soon")
+    context.response.body = "coming soon";
   });
 
 const app = new Application();
