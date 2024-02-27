@@ -1,13 +1,15 @@
+
+
 import { Hono } from 'https://deno.land/x/hono@v4.0.7/mod.ts'
+import { Index } from "./pages/index.tsx";
 
-const app = new Hono()
+export const app = new Hono()
 
-app.get('/', (c) => {
-  return c.text('Hello IBM SL')
-})
 
-app.get('/api', (c) => {
-  return c.text('Here the api will live')
-})
+// static get pages using jsx here 
+Index()
+
+
+// api routes get/put 
 
 Deno.serve(app.fetch)
