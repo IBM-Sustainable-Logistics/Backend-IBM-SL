@@ -11,5 +11,8 @@ Index()
 
 
 // api routes get/put 
+app.get('/api', (c) => c.text('Here the api will live'))
+
+
 
 Deno.serve(app.fetch)

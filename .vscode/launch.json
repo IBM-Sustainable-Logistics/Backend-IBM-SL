@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "chrome",
+            "name": "http://app.get('/', (c) => {  return c.text('Hello IBM SL')})",
+            "request": "launch",
+            "url": "http://app.get('/', (c) => {  return c.text('Hello IBM SL')})"
+        }
+    ]
+}
