@@ -1,0 +1,53 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: IBM-SL
+servers:
+  - url: localhost:8000
+    description: Local server
+  - url: http://ibm-sl-api.deno.dev/
+    description: Production server
+components:
+  schemas: {}
+  parameters: {}
+paths:
+  /api/estimate/:
+    get:
+      parameters:
+        - schema:
+            type: array
+            items:
+              type: object
+              properties:
+                transport_form:
+                  type: string
+                  enum:
+                    - truck
+                    - plane
+                    - boat
+                distance_km:
+                  type: number
+                  example: 178
+              required:
+                - transport_form
+                - distance_km
+            description: >-
+              List of objects that contains a 'transport_form' and its
+              'distance_km'
+            example:
+              - transport_form: truck
+                distance_km: 100
+              - transport_form: plane
+                distance_km: 500
+              - transport_form: boat
+                distance_km: 300
+          required: true
+          name: list
+          in: path
+      responses:
+        '200':
+          description: Retrieve total estimated emission
+          content:
+            application/json:
+              schema:
+                type: number
