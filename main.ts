@@ -9,9 +9,6 @@ import { swaggerUI } from "npm:@hono/swagger-ui@0.2.1";
 
 export const app = new OpenAPIHono();
 
-// serve static files here 
-//app.use('/logo.svg', serveStatic({ path: './assets/ibm-logo.svg' }))
-
 // static get pages using jsx here 
 Index()
 
