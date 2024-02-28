@@ -82,7 +82,7 @@ app.doc("/doc", {
             description: "Local server",
         },
         {
-            url: "http://ibm-sl-api.deno.dev/",
+            url: "https://ibm-sl-api.deno.dev/",
             description: "Production server",
         }
     ],
