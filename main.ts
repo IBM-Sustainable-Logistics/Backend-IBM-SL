@@ -99,8 +99,10 @@ app.get(
 const api = app.basePath('/api')
 
 // api routes get/put 
-api.get('/estimate', async (c) => {
+api.post('/estimate', async (c) => {
     const body = await c.req.json()
+
+
 
     return c.json(body)
 })
