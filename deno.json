@@ -1,5 +1,10 @@
 {
   "tasks": {
-    "start": "deno run --allow-net main.ts"
+    "start": "deno run --allow-net main.ts",
+    "gen": "deno run ./pages/gen.tsx"
+  }
+  "import": {
+    "@hono/swagger-ui": "npm:@hono/swagger-ui@0.2.1",
+    "@hono/zod-openapi": "npm:@hono/zod-openapi@0.9.5"
   }
 }
