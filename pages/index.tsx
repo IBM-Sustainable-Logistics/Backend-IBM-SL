@@ -75,8 +75,8 @@ export const Top: FC = () => {
     <Layout>
       <div class={flex}>
           <Logosvg/>
-         <h1 class={headerClass} >Welcome to IBM SL</h1>
-         <a href="https://ibm-sl.deno.dev/"><button class={button}> Read more </button></a>
+         <h1 class={headerClass} >Welcome to IBM SL API</h1>
+         <a href="/doc/ui"><button class={button}> Read doc </button></a>
       </div>
 
     </Layout>
