@@ -1,8 +1,6 @@
 
 
-import { Hono } from 'https://deno.land/x/hono@v4.0.7/mod.ts'
 import { Index } from "./pages/index.tsx";
-//import { serveStatic } from "https://deno.land/x/hono@v4.0.7/middleware.ts";
 import { z, createRoute, OpenAPIHono } from "npm:@hono/zod-openapi@0.9.5";
 import YAML from "npm:js-yaml";
 import { swaggerUI } from "npm:@hono/swagger-ui@0.2.1";
@@ -13,15 +11,6 @@ export const app = new OpenAPIHono();
 Index()
 
 // --- Docs ---
-
-const ParamsSchema = z.object({
-    id: z
-      .string()
-      .min(3)
-      .openapi({
-        example: '1212121',
-      }),
-  })
 const InputSchema = z.object({
     list: z.array(
         z.object({
@@ -90,6 +79,8 @@ const route = createRoute({
 
 app.openapi(route, (c) => {
     const { body } =  c.req.arrayBuffer() as any;
+
+
     console.log(body);
     return c.json({ estimate: 1000 });
 })
@@ -114,12 +105,12 @@ app.doc("/doc", {
     },
     servers: [
         {
-            url: "http://localhost:8000",
-            description: "Local server",
-        },
-        {
             url: "https://ibm-sl-api.deno.dev/",
             description: "Production server",
+        },
+        {
+            url: "http://localhost:8000",
+            description: "Local server",
         }
     ],
 });

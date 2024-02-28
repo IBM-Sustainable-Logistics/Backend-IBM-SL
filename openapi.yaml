@@ -3,10 +3,10 @@ info:
   version: 1.0.0
   title: IBM-SL
 servers:
-  - url: http://localhost:8000
-    description: Local server
   - url: https://ibm-sl-api.deno.dev/
     description: Production server
+  - url: http://localhost:8000
+    description: Local server
 components:
   schemas: {}
   parameters: {}
