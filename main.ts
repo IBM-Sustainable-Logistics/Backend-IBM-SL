@@ -35,7 +35,7 @@ const OutputSchema = z.number();
 
 const route = createRoute({
     method: "get",
-    path: "/api/estimate/",
+    path: "/api/estimate",
     request: {
         params: InputSchema,
     },
@@ -104,7 +104,8 @@ api.post('/estimate', async (c) => {
 
 
 
-    return c.json(body)
+
+    return c.json(10)
 })
 
 Deno.serve(app.fetch)
