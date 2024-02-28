@@ -34,7 +34,7 @@ const InputSchema = z.object({
 const OutputSchema = z.number();
 
 const route = createRoute({
-    method: "get",
+    method: "post",
     path: "/api/estimate",
     request: {
         params: InputSchema,
