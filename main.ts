@@ -35,13 +35,13 @@ const ErrorSchema = z.object({
     message: z.string().openapi({
       example: 'Bad Request',
     }),
-  })
+})
 
-const OutputSchema = {
+const OutputSchema = z.object({
     estimate: z.number().openapi({
         example: 1000,
     }),
-};
+});
 
 const route = createRoute({
     method: "post",
