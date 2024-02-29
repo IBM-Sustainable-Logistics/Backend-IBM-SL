@@ -74,12 +74,35 @@ const route = createRoute({
     },
 );
 
-app.openapi(route, (c) => {
-    const { body } =  c.req.arrayBuffer() as any;
+app.openapi(route, async (c) => {
 
+    const emissionFactors = {
+        truck: 2.68, // kg CO2e per km
+        ship: 3.2, // kg CO2e per km
+        aircraft: 2.52, // kg CO2e per km
+        train: 2.68, // kg CO2e per km
+    };
 
-    console.log(body);
-    return c.json( 1000 );
+    const fuelEfficiency = {
+        truck: 0.2, // L/km
+        ship: 0.02, // tonnes/km
+        aircraft: 0.15, // L/km per seat (assuming full occupancy for simplification)
+        train: 0.1, // L/km
+    };
+
+    const body = await c.req.json();
+
+    console.log(body)
+
+    let totalEmission = 0;
+
+    body.list.forEach(e => {
+        const emissionFactor = emissionFactors[e.transport_form];
+        const fuelEff = fuelEfficiency[e.transport_form];
+        totalEmission += (emissionFactor * e.distance_km * fuelEff);
+    });
+
+    return c.json( totalEmission );
 })
 
 
