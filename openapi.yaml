@@ -27,9 +27,10 @@ paths:
                       transport_form:
                         type: string
                         enum:
-                          - truck
-                          - plane
-                          - boat
+                          - road
+                          - train
+                          - aircraft
+                          - cargoship
                       distance_km:
                         type: number
                     required:
@@ -39,11 +40,13 @@ paths:
                     List of objects that contains a 'transport_form' and its
                     'distance_km'
                   example:
-                    - transport_form: truck
+                    - transport_form: road
                       distance_km: 100
-                    - transport_form: plane
+                    - transport_form: train
                       distance_km: 500
-                    - transport_form: boat
+                    - transport_form: aircraft
+                      distance_km: 300
+                    - transport_form: cargoship
                       distance_km: 300
               required:
                 - list

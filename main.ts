@@ -14,16 +14,17 @@ Index()
 const InputSchema = z.object({
     list: z.array(
         z.object({
-            transport_form: z.enum(["truck", "plane", "boat"]),
+            transport_form: z.enum(["road", "train", "aircraft", "cargoship"]),
             distance_km: z.number(),
         })
     )
     .openapi({
         description: "List of objects that contains a 'transport_form' and its 'distance_km'",
         example: [
-            { transport_form: "truck", distance_km: 100 },
-            { transport_form: "plane", distance_km: 500 },
-            { transport_form: "boat", distance_km: 300 }
+            { transport_form: "road", distance_km: 100 },
+            { transport_form: "train", distance_km: 500 },
+            { transport_form: "aircraft", distance_km: 300 },
+            { transport_form: "cargoship", distance_km: 300 }
         ],
     }),
 })
