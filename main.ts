@@ -38,11 +38,7 @@ const ErrorSchema = z.object({
     }),
   })
 
-const OutputSchema = {
-    estimate: z.number().openapi({
-        example: 1000,
-    }),
-};
+const OutputSchema = z.number();
 
 const route = createRoute({
     method: "post",
