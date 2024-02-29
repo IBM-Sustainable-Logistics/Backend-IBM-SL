@@ -3,7 +3,7 @@ info:
   version: 1.0.0
   title: IBM-SL
 servers:
-  - url: localhost:8000
+  - url: http://localhost:8000
     description: Local server
   - url: https://ibm-sl-api.deno.dev/
     description: Production server
@@ -13,41 +13,67 @@ components:
 paths:
   /api/estimate:
     post:
-      parameters:
-        - schema:
-            type: array
-            items:
+      requestBody:
+        content:
+          application/json:
+            schema:
               type: object
               properties:
-                transport_form:
-                  type: string
-                  enum:
-                    - truck
-                    - plane
-                    - boat
-                distance_km:
-                  type: number
-                  example: 178
+                list:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      transport_form:
+                        type: string
+                        enum:
+                          - truck
+                          - plane
+                          - boat
+                      distance_km:
+                        type: number
+                    required:
+                      - transport_form
+                      - distance_km
+                  description: >-
+                    List of objects that contains a 'transport_form' and its
+                    'distance_km'
+                  example:
+                    - transport_form: truck
+                      distance_km: 100
+                    - transport_form: plane
+                      distance_km: 500
+                    - transport_form: boat
+                      distance_km: 300
               required:
-                - transport_form
-                - distance_km
-            description: >-
-              List of objects that contains a 'transport_form' and its
-              'distance_km'
-            example:
-              - transport_form: truck
-                distance_km: 100
-              - transport_form: plane
-                distance_km: 500
-              - transport_form: boat
-                distance_km: 300
-          required: true
-          name: list
-          in: path
+                - list
       responses:
         '200':
           description: Retrieve total estimated emission
           content:
             application/json:
               schema:
-                type: number
+                estimate:
+                  _def:
+                    checks: []
+                    typeName: ZodNumber
+                    coerce: false
+                    openapi:
+                      metadata:
+                        example: 1000
+        '400':
+          description: Returns an error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                    example: Bad Request
+                required:
+                  - code
+                  - message

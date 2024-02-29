@@ -13,11 +13,20 @@ export const app = new OpenAPIHono();
 Index()
 
 // --- Docs ---
+
+const ParamsSchema = z.object({
+    id: z
+      .string()
+      .min(3)
+      .openapi({
+        example: '1212121',
+      }),
+  })
 const InputSchema = z.object({
     list: z.array(
         z.object({
             transport_form: z.enum(["truck", "plane", "boat"]),
-            distance_km: z.number().openapi({ example: 178 }),
+            distance_km: z.number(),
         })
     )
     .openapi({
@@ -29,15 +38,33 @@ const InputSchema = z.object({
         ],
     }),
 })
-.openapi("Input");
 
-const OutputSchema = z.number();
+const ErrorSchema = z.object({
+    code: z.number().openapi({
+      example: 400,
+    }),
+    message: z.string().openapi({
+      example: 'Bad Request',
+    }),
+  })
+
+const OutputSchema = {
+    estimate: z.number().openapi({
+        example: 1000,
+    }),
+};
 
 const route = createRoute({
     method: "post",
     path: "/api/estimate",
     request: {
-        params: InputSchema,
+        body: {
+            content: {
+                'application/json': {
+                    schema: InputSchema,
+                },
+            },
+        },
     },
     responses: {
         200: {
@@ -48,16 +75,25 @@ const route = createRoute({
             },
             description: "Retrieve total estimated emission",
         },
-    },
-});
+        400: {
+            content: {
+              'application/json': {
+                schema: ErrorSchema,
+              },
+            },
+            description: 'Returns an error',
+          },
+        },
 
-app.openapi(
-    route,
-    (c) => {
-        // TODO
-        return c.json(1234);
     },
 );
+
+app.openapi(route, (c) => {
+    const { body } =  c.req.arrayBuffer() as any;
+    console.log(body);
+    return c.json({ estimate: 1000 });
+})
+
 
 app.use("/doc/*", (async (c, next) => {
     await next();
@@ -78,7 +114,7 @@ app.doc("/doc", {
     },
     servers: [
         {
-            url: "localhost:8000",
+            url: "http://localhost:8000",
             description: "Local server",
         },
         {
@@ -96,16 +132,7 @@ app.get(
 );
 
 // --- API ---
-const api = app.basePath('/api')
 
 // api routes get/put 
-api.post('/estimate', async (c) => {
-    const body = await c.req.json()
-
-
-
-
-    return c.json(10)
-})
 
 Deno.serve(app.fetch)
