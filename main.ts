@@ -78,14 +78,14 @@ app.openapi(route, async (c) => {
 
     const emissionFactors = {
         truck: 2.68, // kg CO2e per km
-        ship: 3.2, // kg CO2e per km
+        cargoship: 3.2, // kg CO2e per km
         aircraft: 2.52, // kg CO2e per km
         train: 2.68, // kg CO2e per km
     };
 
     const fuelEfficiency = {
         truck: 0.2, // L/km
-        ship: 0.02, // tonnes/km
+        cargoship: 0.02, // tonnes/km
         aircraft: 0.15, // L/km per seat (assuming full occupancy for simplification)
         train: 0.1, // L/km
     };
