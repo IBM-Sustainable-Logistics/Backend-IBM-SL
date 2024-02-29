@@ -79,7 +79,7 @@ app.openapi(route, (c) => {
 
 
     console.log(body);
-    return c.json({ estimate: 1000 });
+    return c.json( 1000 );
 })
 
 
