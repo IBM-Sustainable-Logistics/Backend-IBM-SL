@@ -5,6 +5,7 @@ import { z, createRoute, OpenAPIHono } from "npm:@hono/zod-openapi@0.9.5";
 import YAML from "npm:js-yaml";
 import { swaggerUI } from "npm:@hono/swagger-ui@0.2.1";
 import { estimateRoute } from "./routes/estimate.ts";
+import { supabase } from "./utils/database.ts";
 
 export const app = new OpenAPIHono();
 
@@ -41,6 +42,17 @@ app.openapi(estimateRoute, async (c) => {
         const fuelEff = fuelEfficiency[e.transport_form];
         totalEmission += (emissionFactor * e.distance_km * fuelEff);
 
+        await supabase.from('estimates').insert([
+            { 
+                transport_method: e.transport_form, 
+                distance_km: e.distance_km, 
+                estimate: Math.round(totalEmission),
+            },
+        ]).then(res => {
+            if (res.error) {
+                console.log(res.error)
+            }
+        })
 
     });
 
