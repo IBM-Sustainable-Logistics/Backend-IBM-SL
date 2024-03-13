@@ -49,6 +49,9 @@ async function bingMapsGetLocation(query: string): Promise<{ lat: number, lon: n
 }
 
 async function bingMapsGetDistance(from: string, to: string): Promise<{ distance_km: number, from: string, to: string } | { "status": number, "error": string }> {
+  if (bingMapsKey === undefined)
+    return { status: 500, error: "Bing Maps API key not found" };
+
   const fromLoc = await bingMapsGetLocation(from);
 
   if ("error" in fromLoc)
