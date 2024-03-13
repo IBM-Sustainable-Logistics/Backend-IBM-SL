@@ -2,10 +2,10 @@
 import { z} from "npm:@hono/zod-openapi@0.9.5";
 
 const ErrorSchema = z.object({
-    code: z.number().openapi({
+    status: z.number().openapi({
       example: 400,
     }),
-    message: z.string().openapi({
+    error: z.string().openapi({
       example: 'Bad Request',
     }),
 });
