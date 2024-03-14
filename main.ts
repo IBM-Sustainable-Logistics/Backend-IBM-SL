@@ -81,7 +81,7 @@ async function bingMapsGetDistance(from: string, to: string): Promise<{ distance
     return { status: 500, error: "Error fetching data" };
   
   if (json.resourceSets[0].estimatedTotal == 0)
-    return { status: 404, error: "No results found" };
+    return { status: 400, error: "No results found" };
 
   const distance_km = json.resourceSets[0].resources[0].results[0].travelDistance;
 
@@ -143,6 +143,7 @@ app.openapi(estimateRoute, async c => {
   }
 
   const output: z.infer<typeof OutputSchema> = {
+    status: 200,
     total_kg: Math.round(total_kg),
     stages: stages,
   };

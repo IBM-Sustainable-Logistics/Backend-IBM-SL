@@ -1,6 +1,9 @@
+
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 
 const OutputSchema = z.object({
+    status: z.number()
+        .openapi({ example: 200, }),
     total_kg: z.number()
         .openapi({ description: "The estimated emission for the whole route in kilograms, i.e. the sum of each `stage`.", }),
     stages: z.array(z.number())
@@ -8,7 +11,7 @@ const OutputSchema = z.object({
 })
 .openapi({
     description: "The estimated emission for each `stage` as well as the total.",
-    example: { total_kg: 300, stages: [ 150, 50, 100, ], },
+    example: { status: 200, total_kg: 300, stages: [ 150, 50, 100, ], },
 });
 
 export default OutputSchema;
