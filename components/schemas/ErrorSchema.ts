@@ -2,12 +2,12 @@
 import { z} from "npm:@hono/zod-openapi@0.9.5";
 
 const ErrorSchema = z.object({
-    code: z.number().openapi({
-      example: 400,
-    }),
-    message: z.string().openapi({
-      example: 'Bad Request',
-    }),
+    status: z.number().openapi({ example: 500, }),
+    error: z.string().openapi({ example: "Error fetching data", }),
+})
+.openapi({
+    description: "An error response.",
+    example: { status: 400, error: "No results found" },
 });
 
 export default ErrorSchema;
