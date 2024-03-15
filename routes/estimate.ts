@@ -34,6 +34,6 @@ export const estimateRoute = createRoute({
         },
     },
     description:
-        "Accepts a `route` as an input. A `route` consists of one or multiple `stages`. Each `stage` has a `transport_form` and a `distance_km`." +
+        "Accepts a `route` as an input. A `route` consists of one or multiple `stages`." +
         "The returned value is an object containing a `total_kg` that represents the total estimated emission for the given `route` and a list numbers representing the estimated emissions for each `stage`.",
 });

@@ -9,10 +9,9 @@ import OutputSchema from "./components/schemas/OutputSchema.ts";
 import { swaggerUI } from "npm:@hono/swagger-ui@0.2.1";
 
 import { load } from "https://deno.land/std@0.219.0/dotenv/mod.ts";
-const env = await load();
 
 // --- Bing Maps ---
-const bingMapsKey = env.BING_MAPS_KEY || Deno.env.get("BING_MAPS_KEY");
+const bingMapsKey = (await load()).BING_MAPS_KEY || Deno.env.get("BING_MAPS_KEY");
 
 async function bingMapsGetLocation(
   query: string,
@@ -119,19 +118,35 @@ async function bingMapsGetDistance(
 // static get pages using jsx here
 Index();
 
-const emissionFactors = {
-  truck: 2.68, // kg CO2e per km
-  cargoship: 3.2, // kg CO2e per km
-  aircraft: 2.52, // kg CO2e per km
-  train: 2.68, // kg CO2e per km
+const transportFormEnum = InputSchema.element.options[0].shape.transport_form;
+type TransportForm = z.infer<typeof transportFormEnum>;
+
+// Emission factors use the unit kg CO2e per km for 1 ton of cargo.
+const emissionFactors: { [key in TransportForm]: number } = {
+    // Source: https://publications.jrc.ec.europa.eu/repository/handle/JRC112015
+    // Class 9 truck emits 136 gCO2/tkm for Long-Haul missions
+
+    // Source: https://8billiontrees.com/carbon-offsets-credits/carbon-ecological-footprint-calculators/truck-co2-emissions-per-km-calculator/
+    truck: 0.105,
+    etruck: 0.105 * (1 - 0.33), // emits a third less https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8350515/
+    cargoship: 0.025,
+    aircraft: 0.500,
+    train: 0.065,
 } as const;
 
-const fuelEfficiencies = {
-  truck: 0.2, // L/km
-  cargoship: 0.02, // tonnes/km
-  aircraft: 0.15, // L/km per seat (assuming full occupancy for simplification)
-  train: 0.1, // L/km
-} as const;
+// const emissionFactors = {
+//   truck: 2.68, // kg CO2e per km
+//   cargoship: 3.2, // kg CO2e per km
+//   aircraft: 2.52, // kg CO2e per km
+//   train: 2.68, // kg CO2e per km
+// } as const;
+
+// const fuelEfficiencies = {
+//   truck: 0.2, // L/km
+//   cargoship: 0.02, // tonnes/km
+//   aircraft: 0.15, // L/km per seat (assuming full occupancy for simplification)
+//   train: 0.1, // L/km
+// } as const;
 
 app.openapi(estimateRoute, async (c) => {
   const input = InputSchema.parse(c.req.json());
@@ -143,10 +158,10 @@ app.openapi(estimateRoute, async (c) => {
     const stage = input[i];
 
     const emissionFactor = emissionFactors[stage.transport_form];
-    const fuelEfficiency = fuelEfficiencies[stage.transport_form];
+    const cargoWeight = 10;
 
     if ("distance_km" in stage) {
-      const emission = emissionFactor * stage.distance_km * fuelEfficiency;
+      const emission = emissionFactor * stage.distance_km * cargoWeight;
       total_kg += emission;
 
       stages[i] = Math.round(emission);
@@ -157,7 +172,7 @@ app.openapi(estimateRoute, async (c) => {
         return c.json(response);
       }
 
-      const emission = emissionFactor * response.distance_km * fuelEfficiency;
+      const emission = emissionFactor * response.distance_km * cargoWeight;
       total_kg += emission;
 
       stages[i] = Math.round(emission);
