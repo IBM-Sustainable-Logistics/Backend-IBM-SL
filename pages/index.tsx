@@ -83,11 +83,9 @@ export const Top: FC = () => {
   )
 }
 
-export async function Index () {
+export function Index () {
   app.get('/', (c) => {
     return c.html(<Top />)
   })
 }
-
-
 

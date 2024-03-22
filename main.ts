@@ -3,10 +3,9 @@ import YAML from "npm:js-yaml";
 import { Index } from "./pages/index.tsx";
 import { OpenAPIHono } from "npm:@hono/zod-openapi@0.9.5";
 export const app = new OpenAPIHono();
-
-import { estimateRoute } from "./routes/estimate.ts";
 import { swaggerUI } from "npm:@hono/swagger-ui@0.2.1";
 
+import { estimateRoute } from "./routes/estimate.ts";
 import { estimateEmissions } from "./estimate.ts";
 
 // --- API ---
