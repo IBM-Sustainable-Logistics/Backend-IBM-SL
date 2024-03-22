@@ -24,4 +24,6 @@ jobs:
           deno-version: v1.x
 
       - name: Run tests
+        env:
+        BING_MAPS_KEY: ${{ secrets.BING_MAPS_KEY }}
         run: deno test -A
