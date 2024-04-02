@@ -25,5 +25,5 @@ jobs:
 
       - name: Run tests
         env:
-        BING_MAPS_KEY: ${{ secrets.BING_MAPS_KEY }}
+          BING_MAPS_KEY: ${{ secrets.BING_MAPS_KEY }}
         run: deno test -A
