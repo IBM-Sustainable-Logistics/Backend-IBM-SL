@@ -17,11 +17,14 @@ export default class CityList {
 
   public constructor() {
     this.city_trie = { children: [], data: undefined };
-    this.insert("City", { lat: 10.0, lon: 20.0, country: "Country" });
   }
 
-  public getAutoSuggestions(query: string): string[] {
-    return [];
+  public getAutoSuggestions(query: string): { city: string, country: string }[] {
+    return [
+      { city: "City1", country: "Country1" },
+      { city: "City2", country: "Country2" },
+      { city: "City3", country: "Country3" },
+    ];
   }
 
   public getLocation(
@@ -30,8 +33,8 @@ export default class CityList {
     return null;
   }
 
-  public insert(word: string, data: { lat: number, lon: number, country: string }): void {
-    node_insert(this.city_trie, word, data);
+  public insert(city: string, data: { lat: number, lon: number, country: string }): void {
+    node_insert(this.city_trie, city, data);
   }
 }
 

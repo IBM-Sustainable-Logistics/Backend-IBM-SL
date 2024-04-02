@@ -1,5 +1,5 @@
 
-import { ErrorType } from "./components/schemas/ErrorSchema.ts";
+import { ErrorType } from "./components/schemas/EstimateErrorSchema.ts";
 import { load } from "https://deno.land/std@0.219.0/dotenv/mod.ts";
 
 const bingMapsKey = (await load()).BING_MAPS_KEY || Deno.env.get("BING_MAPS_KEY");

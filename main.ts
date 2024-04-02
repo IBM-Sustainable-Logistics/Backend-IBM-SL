@@ -4,10 +4,12 @@ import { Index } from "./pages/index.tsx";
 import { OpenAPIHono } from "npm:@hono/zod-openapi@0.9.5";
 export const app = new OpenAPIHono();
 
-import { estimateRoute } from "./routes/estimate.ts";
+import { routeEstimateEmissions } from "./routes/estimate.ts";
+import { routeSuggestCities } from "./routes/suggest.ts";
 import { swaggerUI } from "npm:@hono/swagger-ui@0.2.1";
 
 import { estimateEmissions } from "./estimate.ts";
+import { suggestCities } from "./suggest.ts";
 
 // --- API ---
 
@@ -15,8 +17,13 @@ import { estimateEmissions } from "./estimate.ts";
 Index();
 
 app.openapi(
-  estimateRoute,
+  routeEstimateEmissions,
   async (c) => c.json(await estimateEmissions(await c.req.json())),
+);
+
+app.openapi(
+  routeSuggestCities,
+  async (c) => c.json(suggestCities(await c.req.json())),
 );
 
 // --- Docs ---

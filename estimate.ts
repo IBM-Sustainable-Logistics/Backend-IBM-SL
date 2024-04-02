@@ -1,7 +1,7 @@
 
-import { ErrorType } from "./components/schemas/ErrorSchema.ts";
-import { InputType, TransportForm } from "./components/schemas/InputSchema.ts";
-import { OutputType } from "./components/schemas/OutputSchema.ts";
+import { ErrorType } from "./components/schemas/EstimateErrorSchema.ts";
+import { InputType, TransportForm } from "./components/schemas/EstimateInputSchema.ts";
+import { OutputType } from "./components/schemas/EstimateOutputSchema.ts";
 import { getDistance } from "./bingmaps.ts";
 
 // Emission factors use the unit kg CO2e per km for 1 ton of cargo.
