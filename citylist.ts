@@ -3,8 +3,6 @@ CSV format
 
   Name:
     The city names are both stored with Unicode characters, `city`, and Ascii, `city_ascii`.
-    Each city might also have an `city_alt` that contains an alternative name/spelling for
-    the city.
 
   Coordinates:
     The columns: `lat` and `lng` respectively contains the latitude and longitude,
@@ -19,6 +17,7 @@ export default class CityList {
 
   public constructor() {
     this.city_trie = { children: [], data: undefined };
+    this.insert("City", { lat: 10.0, lon: 20.0, country: "Country" });
   }
 
   public getAutoSuggestions(query: string): string[] {
@@ -29,6 +28,10 @@ export default class CityList {
     query: string,
   ): null | { lat: number; lon: number; city: string } {
     return null;
+  }
+
+  public insert(word: string, data: { lat: number, lon: number, country: string }): void {
+    node_insert(this.city_trie, word, data);
   }
 }
 
@@ -42,7 +45,7 @@ type TrieNode<Data> = {
   data: undefined | Data[];
 };
 
-function insert<Data>(node: TrieNode<Data>, word: string, data: Data): void {
+function node_insert<Data>(node: TrieNode<Data>, word: string, data: Data): void {
   if (word.length === 0) {
     if (node.data === undefined)
       node.data = [data];
@@ -56,7 +59,7 @@ function insert<Data>(node: TrieNode<Data>, word: string, data: Data): void {
 
   for (const child of node.children) {
     if (child.char == char) {
-      insert(child.node, word.slice(1), data);
+      node_insert(child.node, word.slice(1), data);
       return;
     }
   }
@@ -65,10 +68,10 @@ function insert<Data>(node: TrieNode<Data>, word: string, data: Data): void {
 
   node.children.push({ char, node: new_node });
 
-  insert(new_node, word.slice(1), data);
+  node_insert(new_node, word.slice(1), data);
 }
 
-function get<Data>(node: TrieNode<Data>, word: string): undefined | Data[] {
+function node_get<Data>(node: TrieNode<Data>, word: string): undefined | Data[] {
   if (word.length === 0)
     return node.data;
 
@@ -76,10 +79,9 @@ function get<Data>(node: TrieNode<Data>, word: string): undefined | Data[] {
 
   for (const child of node.children) {
     if (child.char == char) {
-      return get(child.node, word.slice(1));
+      return node_get(child.node, word.slice(1));
     }
   }
 
   return undefined;
 }
-
