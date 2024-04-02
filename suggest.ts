@@ -13,6 +13,6 @@ export function suggestCities(input: InputType): OutputType | ErrorType {
     addWorldCities(city_list);
   }
 
-  return city_list.getAutoSuggestions(input);
+  return city_list.getAutoSuggestions({ city_start: input.city, country: input.country });
 }
 

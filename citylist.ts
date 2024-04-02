@@ -12,79 +12,131 @@ CSV format
 
  */
 
+type CityQuery = { city_start: string, country?: string };
+type CitySuggestion = { city: string, country: string };
+type CityData = { lat: number, lon: number, country: string, population: number, id: number };
+type CityEntry = { city_end: string, data: CityData };
+
 export default class CityList {
-  private city_trie: TrieNode<{ lat: number, lon: number, country: string }>;
+  private trie: TrieNode;
 
   public constructor() {
-    this.city_trie = { children: [], data: undefined };
+    this.trie = { children: [], datas: undefined };
   }
 
-  public getAutoSuggestions(query: string): { city: string, country: string }[] {
-    return [
-      { city: "City1", country: "Country1" },
-      { city: "City2", country: "Country2" },
-      { city: "City3", country: "Country3" },
-    ];
+  public getAutoSuggestions(query: CityQuery): CitySuggestion[] {
+    const queryCountry = query.country;
+
+    const node = node_get(this.trie, query.city_start);
+    if (node === undefined)
+      return [];
+
+    const array: CityEntry[] = [];
+    node_get_all_from(
+      node,
+      (a, b) => a.population - b.population,
+      (e) => {
+        if (queryCountry !== undefined && !e.data.country.startsWith(queryCountry))
+          return false;
+
+        if (array.find(o => e.city_end === o.city_end && e.data.country === o.data.country) !== undefined)
+          return false;
+
+        return true;
+      },
+      10,
+      "",
+      array,
+    );
+
+    return array.map(e => ({ city: query.city_start + e.city_end, country: e.data.country }));
   }
 
-  public getLocation(
-    query: string,
-  ): null | { lat: number; lon: number; city: string } {
-    return null;
-  }
+  // public getLocation(
+  //   query: string,
+  // ): null | { lat: number; lon: number; } {
+  //   return null;
+  // }
 
-  public insert(city: string, data: { lat: number, lon: number, country: string }): void {
-    node_insert(this.city_trie, city, data);
+  public insert(city: string, data: CityData): void {
+    node_insert(this.trie, city, data);
   }
 }
 
-type TrieNode<Data> = {
-  children: { char: string, node: TrieNode<Data> }[],
+type TrieNode = {
+  children: { char: string, node: TrieNode }[],
 
   /**
-   * Contains data if the current node is a valid word.
+   * Contains data if the current node is a valid city.
    * Otherwise, it is undefined.
    */
-  data: undefined | Data[];
+  datas: undefined | CityData[];
 };
 
-function node_insert<Data>(node: TrieNode<Data>, word: string, data: Data): void {
-  if (word.length === 0) {
-    if (node.data === undefined)
-      node.data = [data];
-    else
-      node.data.push(data);
+function node_insert(node: TrieNode, city_end: string, data: CityData): void {
+  if (city_end.length > 0) {
+    const char = city_end.charAt(0);
+
+    for (const child of node.children) {
+      if (child.char == char) {
+        node_insert(child.node, city_end.slice(1), data);
+        return;
+      }
+    }
+
+    const new_node: TrieNode = { children: [], datas: undefined };
+    node.children.push({ char, node: new_node });
+    node_insert(new_node, city_end.slice(1), data);
 
     return;
   }
 
-  const char = word[0];
-
-  for (const child of node.children) {
-    if (child.char == char) {
-      node_insert(child.node, word.slice(1), data);
-      return;
-    }
+  if (node.datas === undefined) {
+    node.datas = [data];
+    return;
   }
 
-  const new_node: TrieNode<Data> = { children: [], data: undefined };
-
-  node.children.push({ char, node: new_node });
-
-  node_insert(new_node, word.slice(1), data);
+  node.datas.push(data);
+  return;
 }
 
-function node_get<Data>(node: TrieNode<Data>, word: string): undefined | Data[] {
-  if (word.length === 0)
-    return node.data;
+function node_get(node: TrieNode, city_end: string): undefined | TrieNode {
+  if (city_end.length === 0)
+    return node;
 
-  const char = word[0];
+  const char = city_end[0];
 
   for (const child of node.children) {
     if (child.char == char) {
-      return node_get(child.node, word.slice(1));
+      return node_get(child.node, city_end.slice(1));
     }
   }
 
   return undefined;
+}
+
+function node_get_all_from(node: TrieNode, compare?: (a: CityData, b: CityData) => number, predicate?: (entry: CityEntry) => boolean, limit?: number, city_end?: string, array?: CityEntry[]): CityEntry[] {
+  if (city_end === undefined)
+    city_end = "";
+
+  if (array === undefined)
+    array = [];
+
+  if (limit !== undefined && array.length >= limit)
+    return array;
+
+  if (node.datas !== undefined) {
+    const datas = compare !== undefined ? node.datas.toSorted(compare) : node.datas;
+    for (let i = 0; i < datas.length && (limit === undefined || array.length < limit); i++) {
+      if (predicate !== undefined && predicate({ city_end: city_end, data: datas[i] })) {
+        array.push({ city_end: city_end, data: datas[i] });
+      }
+    }
+  }
+
+  for (const child of node.children) {
+    node_get_all_from(child.node, compare, predicate, limit, city_end + child.char, array);
+  }
+
+  return array;
 }
