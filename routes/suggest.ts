@@ -1,7 +1,7 @@
 import { createRoute } from "npm:@hono/zod-openapi@0.9.5";
-import InputSchema from "../components/schemas/SuggestInputSchema.ts";
-import OutputSchema from "../components/schemas/SuggestOutputSchema.ts";
-import ErrorSchema from "../components/schemas/SuggestErrorSchema.ts";
+import AddressSchema from "../components/schemas/AddressSchema.ts";
+import SuggestionsSchema from "../components/schemas/SuggestionsSchema.ts";
+import ErrorSchema from "../components/schemas/ErrorSchema.ts";
 
 export const routeSuggestCities = createRoute({
   method: "post",
@@ -10,7 +10,7 @@ export const routeSuggestCities = createRoute({
     body: {
       content: {
         "application/json": {
-          schema: InputSchema,
+          schema: AddressSchema,
         },
       },
     },
@@ -18,7 +18,7 @@ export const routeSuggestCities = createRoute({
   responses: {
     200: {
       "application/json": {
-        schema: OutputSchema,
+        schema: SuggestionsSchema,
       },
       description: "TODO: Add description",
     },

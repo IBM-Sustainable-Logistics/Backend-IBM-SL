@@ -1,6 +1,6 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 
-const OutputSchema = z.object({
+const EstimationsSchema = z.object({
   status: z.number()
     .openapi({ example: 200 }),
   total_kg: z.number()
@@ -19,6 +19,6 @@ const OutputSchema = z.object({
   example: { status: 200, total_kg: 300, stages: [150, 50, 100] },
 });
 
-export type OutputType = z.infer<typeof OutputSchema>;
+export type EstimationsType = z.infer<typeof EstimationsSchema>;
 
-export default OutputSchema;
+export default EstimationsSchema;

@@ -1,6 +1,6 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 
-const OutputSchema = z.array(
+const SuggestionsSchema = z.array(
   z.object({
     city: z.string()
     .openapi({
@@ -16,7 +16,7 @@ const OutputSchema = z.array(
   description: "A list of city suggestions and their countries",
 });
 
-export type OutputType = z.infer<typeof OutputSchema>;
+export type SuggestionsType = z.infer<typeof SuggestionsSchema>;
 
-export default OutputSchema;
+export default SuggestionsSchema;
 

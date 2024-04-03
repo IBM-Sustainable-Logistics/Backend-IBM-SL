@@ -34,10 +34,38 @@ Deno.test("estimate emissions distances only", { }, async () =>
   )
 );
 
+Deno.test("estimate emissions from-to city only", { permissions: { read: true, net: true } }, async () =>
+  assertEquals(await estimateEmissions([
+    { transport_form: "truck", from: { city: "Copenhagen", country: "Denmark" }, to: { city: "Hørsholm", country: "Denmark" } },
+  ]),
+    {
+      status:   200,
+      total_kg: 31,
+      stages: [
+        31,
+      ],
+    }
+  )
+);
+
+Deno.test("estimate emissions from-to city and country", { permissions: { read: true, net: true } }, async () =>
+  assertEquals(await estimateEmissions([
+    { transport_form: "truck", from: { city: "New York", country: "United States" }, to: { city: "Los Angeles", country: "United States" } },
+  ]),
+    {
+      status:   200,
+      total_kg: 4740,
+      stages: [
+        4740,
+      ],
+    }
+  )
+);
+
 Deno.test("estimate emissions from docs", { permissions: { read: true, net: true } }, async () => 
   assertEquals(await estimateEmissions([
     { transport_form: "truck",      distance_km: 100 },
-    { transport_form: "truck",      from: "New York", to: "Los Angeles" },
+    { transport_form: "truck",      from: { city: "New York", country: "United States" }, to: { city: "Los Angeles" } },
     { transport_form: "etruck",     distance_km: 100 },
     { transport_form: "train",      distance_km: 500 },
     { transport_form: "aircraft",   distance_km: 300 },
@@ -45,10 +73,10 @@ Deno.test("estimate emissions from docs", { permissions: { read: true, net: true
   ]),
     {
       status:   200,
-      total_kg: 6788,
+      total_kg: 6816,
       stages: [
         105,
-        4713,
+        4740,
         70,
         325,
         1500,
