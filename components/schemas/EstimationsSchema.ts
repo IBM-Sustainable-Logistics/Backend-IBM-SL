@@ -8,15 +8,28 @@ const EstimationsSchema = z.object({
       description:
         "The estimated emission for the whole route in kilograms, i.e. the sum of each `stage`.",
     }),
-  stages: z.array(z.number())
-    .openapi({
-      description: "A list of the estimated emissions for each `stage`.",
-    }),
-})
-.openapi({
-  description:
-    "The estimated emission for each `stage` as well as the total.",
-  example: { status: 200, total_kg: 300, stages: [150, 50, 100] },
+  stages: z.array(z.object(
+    {
+      kg: z.number()
+        .openapi({
+          description: "A list of the estimated emissions for each `stage`.",
+        }),
+      transport_form: z.string().openapi({
+        description: "The vehicle type that is used in this `stage`.",
+      }),
+    },
+  )).openapi({
+    description:
+      "The estimated emission for each `stage` as well as the total.",
+    example: {
+      status: 200,
+      total_kg: 300,
+      stages: [
+        { kg: 100, transport_form: "truck" },
+        { kg: 200, transport_form: "etruck" },
+      ],
+    },
+  }),
 });
 
 export type EstimationsType = z.infer<typeof EstimationsSchema>;

@@ -38,7 +38,7 @@ export async function estimateEmissions(
 ): Promise<EstimationsType | ErrorType> {
   let total_kg = 0;
 
-  const stages: number[] = new Array(input.length);
+  const stages: { kg: number; transport_form: TransportForm }[] = [];
   for (let i = 0; i < input.length; i++) {
     const stage = input[i];
 
@@ -49,7 +49,10 @@ export async function estimateEmissions(
       const emission = emissionFactor * stage.distance_km * cargoWeight;
       total_kg += emission;
 
-      stages[i] = Math.round(emission);
+      stages[i] = {
+        kg: Math.round(emission),
+        transport_form: stage.transport_form,
+      };
     } else {
       const from = getLocation(stage.from, "from");
       if ("error" in from) {
@@ -70,7 +73,10 @@ export async function estimateEmissions(
       const emission = emissionFactor * response.distance_km * cargoWeight;
       total_kg += emission;
 
-      stages[i] = Math.round(emission);
+      stages[i] = {
+        kg: Math.round(emission),
+        transport_form: stage.transport_form,
+      };
     }
   }
 
