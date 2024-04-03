@@ -1,4 +1,3 @@
-
 import { ErrorType } from "./components/schemas/ErrorSchema.ts";
 import { InputType, TransportForm } from "./components/schemas/InputSchema.ts";
 import { OutputType } from "./components/schemas/OutputSchema.ts";
@@ -31,10 +30,12 @@ const emissionFactors: { [key in TransportForm]: number } = {
 //   train: 0.1, // L/km
 // } as const;
 
-export async function estimateEmissions(input: InputType): Promise<OutputType | ErrorType> {
+export async function estimateEmissions(
+  input: InputType,
+): Promise<OutputType | ErrorType> {
   let total_kg = 0;
 
-  const stages: number[] = new Array(input.length);
+  const stages: { kg: number; transport_form: TransportForm }[] = [];
   for (let i = 0; i < input.length; i++) {
     const stage = input[i];
 
@@ -45,7 +46,10 @@ export async function estimateEmissions(input: InputType): Promise<OutputType | 
       const emission = emissionFactor * stage.distance_km * cargoWeight;
       total_kg += emission;
 
-      stages[i] = Math.round(emission);
+      stages[i] = {
+        kg: Math.round(emission),
+        transport_form: stage.transport_form,
+      };
     } else {
       const response = await getDistance(stage.from, stage.to);
 
@@ -56,7 +60,10 @@ export async function estimateEmissions(input: InputType): Promise<OutputType | 
       const emission = emissionFactor * response.distance_km * cargoWeight;
       total_kg += emission;
 
-      stages[i] = Math.round(emission);
+      stages[i] = {
+        kg: Math.round(emission),
+        transport_form: stage.transport_form,
+      };
     }
   }
 
@@ -66,4 +73,3 @@ export async function estimateEmissions(input: InputType): Promise<OutputType | 
     stages: stages,
   };
 }
-

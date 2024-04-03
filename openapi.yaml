@@ -13,50 +13,121 @@ components:
 paths:
   /api/estimate:
     post:
+      description: >-
+        Accepts a `route` as an input. A `route` consists of one or multiple
+        `stages`.The returned value is an object containing a `total_kg` that
+        represents the total estimated emission for the given `route` and a list
+        numbers representing the estimated emissions for each `stage`.
       requestBody:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                list:
-                  type: array
-                  items:
-                    type: object
+              type: array
+              items:
+                anyOf:
+                  - type: object
                     properties:
                       transport_form:
                         type: string
                         enum:
                           - truck
+                          - etruck
                           - train
                           - aircraft
                           - cargoship
+                        description: The vehicle type that is used in this `stage`.
                       distance_km:
                         type: number
+                        description: >-
+                          The distance of this `stage` of the route in
+                          kilometers.
                     required:
                       - transport_form
                       - distance_km
-                  description: >-
-                    List of objects that contains a 'transport_form' and its
-                    'distance_km'
-                  example:
-                    - transport_form: truck
-                      distance_km: 100
-                    - transport_form: train
-                      distance_km: 500
-                    - transport_form: aircraft
-                      distance_km: 300
-                    - transport_form: cargoship
-                      distance_km: 300
-              required:
-                - list
+                  - type: object
+                    properties:
+                      transport_form:
+                        type: string
+                        enum:
+                          - truck
+                          - etruck
+                        description: The vehicle type that is used in this `stage`.
+                      from:
+                        type: string
+                        description: The address of the starting point of this `stage`.
+                      to:
+                        type: string
+                        description: The address of the destination of this `stage`.
+                    required:
+                      - transport_form
+                      - from
+                      - to
+                description: >-
+                  A `stage` that contains a `transport_form` and either a
+                  `distance_km` or `from` and `to`.
+                example:
+                  transport_form: truck
+                  distance_km: 100
+              description: List of objects that each represents a `stage` of the route.
+              example:
+                - transport_form: truck
+                  distance_km: 100
+                - transport_form: truck
+                  from: New York
+                  to: Los Angeles
+                - transport_form: etruck
+                  distance_km: 100
+                - transport_form: train
+                  distance_km: 500
+                - transport_form: aircraft
+                  distance_km: 300
+                - transport_form: cargoship
+                  distance_km: 300
       responses:
         '200':
-          description: Retrieve total estimated emission
+          description: The estimated emission for each `stage` as well as the total.
           content:
             application/json:
               schema:
-                type: number
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  total_kg:
+                    type: number
+                    description: >-
+                      The estimated emission for the whole route in kilograms,
+                      i.e. the sum of each `stage`.
+                  stages:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kg:
+                          type: number
+                          description: A list of the estimated emissions for each `stage`.
+                        transport_form:
+                          type: string
+                          description: The vehicle type that is used in this `stage`.
+                      required:
+                        - kg
+                        - transport_form
+                    description: >-
+                      The estimated emission for each `stage` as well as the
+                      total.
+                    example:
+                      status: 200
+                      total_kg: 300
+                      stages:
+                        - kg: 100
+                          transport_form: truck
+                        - kg: 200
+                          transport_form: etruck
+                required:
+                  - status
+                  - total_kg
+                  - stages
         '400':
           description: Returns an error
           content:
@@ -64,12 +135,16 @@ paths:
               schema:
                 type: object
                 properties:
-                  code:
+                  status:
                     type: number
-                    example: 400
-                  message:
+                    example: 500
+                  error:
                     type: string
-                    example: Bad Request
+                    example: Error fetching data
                 required:
-                  - code
-                  - message
+                  - status
+                  - error
+                description: An error response.
+                example:
+                  status: 400
+                  error: No results found
