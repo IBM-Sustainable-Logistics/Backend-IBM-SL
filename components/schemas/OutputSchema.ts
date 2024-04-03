@@ -1,5 +1,4 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
-
 const OutputSchema = z.object({
   status: z.number()
     .openapi({ example: 200 }),
@@ -18,18 +17,18 @@ const OutputSchema = z.object({
         description: "The vehicle type that is used in this `stage`.",
       }),
     },
-  )).openapi({
-    description:
-      "The estimated emission for each `stage` as well as the total.",
-    example: {
-      status: 200,
-      total_kg: 300,
-      stages: [
-        { kg: 100, transport_form: "truck" },
-        { kg: 200, transport_form: "etruck" },
+  )).openapi(
+    {
+      description: "A list of the estimated emissions for each `stage`.",
+      example: [
+        { kg: 105, transport_form: "truck" },
+        { kg: 4713, transport_form: "truck" },
+        { kg: 70, transport_form: "etruck" },
+        { kg: 325, transport_form: "train" },
+        { kg: 1500, transport_form: "aircraft" },
       ],
     },
-  }),
+  ),
 });
 
 export type OutputType = z.infer<typeof OutputSchema>;

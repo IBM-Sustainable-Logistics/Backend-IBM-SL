@@ -113,17 +113,18 @@ paths:
                       required:
                         - kg
                         - transport_form
-                    description: >-
-                      The estimated emission for each `stage` as well as the
-                      total.
+                    description: A list of the estimated emissions for each `stage`.
                     example:
-                      status: 200
-                      total_kg: 300
-                      stages:
-                        - kg: 100
-                          transport_form: truck
-                        - kg: 200
-                          transport_form: etruck
+                      - kg: 105
+                        transport_form: truck
+                      - kg: 4713
+                        transport_form: truck
+                      - kg: 70
+                        transport_form: etruck
+                      - kg: 325
+                        transport_form: train
+                      - kg: 1500
+                        transport_form: aircraft
                 required:
                   - status
                   - total_kg

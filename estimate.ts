@@ -35,7 +35,8 @@ export async function estimateEmissions(
 ): Promise<OutputType | ErrorType> {
   let total_kg = 0;
 
-  const stages: { kg: number; transport_form: TransportForm }[] = [];
+  const stages: { kg: number; transport_form: string }[] = [];
+
   for (let i = 0; i < input.length; i++) {
     const stage = input[i];
 
