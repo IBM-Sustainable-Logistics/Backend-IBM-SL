@@ -1,13 +1,13 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 import AddressSchema from "./AddressSchema.ts";
 
-const TransportFormEnum =
+export const TransportFormEnum =
   z.enum([ "truck", "etruck", "train", "aircraft", "cargoship"])
   .openapi({
     description: "The vehicle type that is used in this `stage`.",
   });
 
-const TruckFormEnum =
+export const TruckFormEnum =
   z.enum(["truck", "etruck"])
   .openapi({
     description: "The vehicle type that is used in this `stage`.",

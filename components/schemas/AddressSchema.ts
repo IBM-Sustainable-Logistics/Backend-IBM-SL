@@ -6,8 +6,7 @@ const AddressSchema = z.object({
       description: "The city query.",
       example: "New York",
     }),
-  country: z.optional(
-      z.string()
+  country: z.optional(z.string()
       .openapi({
         example: "United States"
       })

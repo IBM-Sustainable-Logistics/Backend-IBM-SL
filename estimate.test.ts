@@ -19,16 +19,16 @@ Deno.test("estimate emissions distances only", { }, async () =>
       status: 200,
       total_kg: 896,
       stages: [
-        11,
-        14,
-        20,
-        200,
-        13,
-        63,
-        49,
-        52,
-        450,
-        25,
+        { transport_form: "truck",      kg: 11, },
+        { transport_form: "etruck",     kg: 14, },
+        { transport_form: "train",      kg: 20, },
+        { transport_form: "aircraft",   kg: 200, },
+        { transport_form: "cargoship",  kg: 13, },
+        { transport_form: "truck",      kg: 63, },
+        { transport_form: "etruck",     kg: 49, },
+        { transport_form: "train",      kg: 52, },
+        { transport_form: "aircraft",   kg: 450, },
+        { transport_form: "cargoship",  kg: 25, },
       ],
     }
   )
@@ -42,7 +42,7 @@ Deno.test("estimate emissions from-to city only", { permissions: { read: true, n
       status:   200,
       total_kg: 31,
       stages: [
-        31,
+        { transport_form: "truck", kg: 31 },
       ],
     }
   )
@@ -56,7 +56,7 @@ Deno.test("estimate emissions from-to city and country", { permissions: { read: 
       status:   200,
       total_kg: 4740,
       stages: [
-        4740,
+        { transport_form: "truck", kg: 4740 },
       ],
     }
   )
@@ -75,12 +75,12 @@ Deno.test("estimate emissions from docs", { permissions: { read: true, net: true
       status:   200,
       total_kg: 6816,
       stages: [
-        105,
-        4740,
-        70,
-        325,
-        1500,
-        75,
+        { transport_form: "truck",      kg: 105 },
+        { transport_form: "truck",      kg: 4740 },
+        { transport_form: "etruck",     kg: 70 },
+        { transport_form: "train",      kg: 325 },
+        { transport_form: "aircraft",   kg: 1500 },
+        { transport_form: "cargoship",  kg: 75 },
       ],
     }
   )

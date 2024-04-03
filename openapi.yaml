@@ -149,28 +149,32 @@ paths:
                       properties:
                         kg:
                           type: number
-                          description: A list of the estimated emissions for each `stage`.
+                          description: The estimated emissions for this `stage`.
                         transport_form:
                           type: string
+                          enum:
+                            - truck
+                            - etruck
+                            - train
+                            - aircraft
+                            - cargoship
                           description: The vehicle type that is used in this `stage`.
                       required:
                         - kg
                         - transport_form
-                    description: >-
-                      The estimated emission for each `stage` as well as the
-                      total.
-                    example:
-                      status: 200
-                      total_kg: 300
-                      stages:
-                        - kg: 100
-                          transport_form: truck
-                        - kg: 200
-                          transport_form: etruck
                 required:
                   - status
                   - total_kg
                   - stages
+                description: The estimated emission for each `stage` as well as the total.
+                example:
+                  status: 200
+                  total_kg: 300
+                  stages:
+                    - kg: 100
+                      transport_form: truck
+                    - kg: 200
+                      transport_form: etruck
         '400':
           description: Returns an error
           content:
