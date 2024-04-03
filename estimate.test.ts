@@ -1,4 +1,3 @@
-
 import { assertEquals } from "https://deno.land/std@0.220.0/assert/mod.ts";
 import { estimateEmissions } from "./estimate.ts";
 
@@ -19,16 +18,16 @@ Deno.test("estimate emissions distances only", { }, async () =>
       status: 200,
       total_kg: 896,
       stages: [
-        { transport_form: "truck",      kg: 11, },
-        { transport_form: "etruck",     kg: 14, },
-        { transport_form: "train",      kg: 20, },
-        { transport_form: "aircraft",   kg: 200, },
-        { transport_form: "cargoship",  kg: 13, },
-        { transport_form: "truck",      kg: 63, },
-        { transport_form: "etruck",     kg: 49, },
-        { transport_form: "train",      kg: 52, },
-        { transport_form: "aircraft",   kg: 450, },
-        { transport_form: "cargoship",  kg: 25, },
+        { kg: 11, transport_form: "truck" },
+        { kg: 14, transport_form: "etruck" },
+        { kg: 20, transport_form: "train" },
+        { kg: 200, transport_form: "aircraft" },
+        { kg: 13, transport_form: "cargoship" },
+        { kg: 63, transport_form: "truck" },
+        { kg: 49, transport_form: "etruck" },
+        { kg: 52, transport_form: "train" },
+        { kg: 450, transport_form: "aircraft" },
+        { kg: 25, transport_form: "cargoship" },
       ],
     }
   )
@@ -42,7 +41,7 @@ Deno.test("estimate emissions from-to city only", { permissions: { read: true, n
       status:   200,
       total_kg: 31,
       stages: [
-        { transport_form: "truck", kg: 31 },
+        { kg: 31, transport_form: "truck" },
       ],
     }
   )
@@ -56,7 +55,7 @@ Deno.test("estimate emissions from-to city and country", { permissions: { read: 
       status:   200,
       total_kg: 4740,
       stages: [
-        { transport_form: "truck", kg: 4740 },
+        { kg: 4740, transport_form: "truck" },
       ],
     }
   )
@@ -75,13 +74,12 @@ Deno.test("estimate emissions from docs", { permissions: { read: true, net: true
       status:   200,
       total_kg: 6816,
       stages: [
-        { transport_form: "truck",      kg: 105 },
-        { transport_form: "truck",      kg: 4740 },
-        { transport_form: "etruck",     kg: 70 },
-        { transport_form: "train",      kg: 325 },
-        { transport_form: "aircraft",   kg: 1500 },
-        { transport_form: "cargoship",  kg: 75 },
+        { kg: 105, transport_form: "truck" },
+        { kg: 4740, transport_form: "truck" },
+        { kg: 70, transport_form: "etruck" },
+        { kg: 325, transport_form: "train" },
+        { kg: 1500, transport_form: "aircraft" },
+        { kg: 75, transport_form: "cargoship" },
       ],
-    }
-  )
-);
+    },
+  ));
