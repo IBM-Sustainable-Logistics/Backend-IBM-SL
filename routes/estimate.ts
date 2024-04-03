@@ -1,16 +1,16 @@
 import { createRoute } from "npm:@hono/zod-openapi@0.9.5";
-import InputSchema from "../components/schemas/InputSchema.ts";
-import OutputSchema from "../components/schemas/OutputSchema.ts";
+import RouteSchema from "../components/schemas/RouteSchema.ts";
+import EstimationsSchema from "../components/schemas/EstimationsSchema.ts";
 import ErrorSchema from "../components/schemas/ErrorSchema.ts";
 
-export const estimateRoute = createRoute({
+export const routeEstimateEmissions = createRoute({
   method: "post",
   path: "/api/estimate",
   request: {
     body: {
       content: {
         "application/json": {
-          schema: InputSchema,
+          schema: RouteSchema,
         },
       },
     },
@@ -19,7 +19,7 @@ export const estimateRoute = createRoute({
     200: {
       content: {
         "application/json": {
-          schema: OutputSchema,
+          schema: EstimationsSchema,
         },
       },
       description:

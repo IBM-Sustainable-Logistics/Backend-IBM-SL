@@ -1,7 +1,10 @@
 import { ErrorType } from "./components/schemas/ErrorSchema.ts";
-import { InputType, TransportForm } from "./components/schemas/InputSchema.ts";
-import { OutputType } from "./components/schemas/OutputSchema.ts";
+import { RouteType, TransportForm } from "./components/schemas/RouteSchema.ts";
+import { EstimationsType } from "./components/schemas/EstimationsSchema.ts";
+import { AddressType } from "./components/schemas/AddressSchema.ts";
+import { LocationType } from "./components/schemas/LocationSchema.ts";
 import { getDistance } from "./bingmaps.ts";
+import { getWorldCities } from "./citylist.ts";
 
 // Emission factors use the unit kg CO2e per km for 1 ton of cargo.
 const emissionFactors: { [key in TransportForm]: number } = {
@@ -31,11 +34,11 @@ const emissionFactors: { [key in TransportForm]: number } = {
 // } as const;
 
 export async function estimateEmissions(
-  input: InputType,
-): Promise<OutputType | ErrorType> {
+  input: RouteType,
+): Promise<EstimationsType | ErrorType> {
   let total_kg = 0;
 
-  const stages: { kg: number; transport_form: string }[] = [];
+  const stages: { kg: number; transport_form: TransportForm }[] = [];
 
   for (let i = 0; i < input.length; i++) {
     const stage = input[i];
@@ -52,9 +55,19 @@ export async function estimateEmissions(
         transport_form: stage.transport_form,
       };
     } else {
-      const response = await getDistance(stage.from, stage.to);
+      const from = getLocation(stage.from, "from");
+      if ("error" in from) {
+        return from;
+      }
 
-      if ("status" in response) {
+      const to = getLocation(stage.to, "to");
+      if ("error" in to) {
+        return to;
+      }
+
+      const response = await getDistance(from, to);
+
+      if ("error" in response) {
         return response;
       }
 
@@ -73,4 +86,27 @@ export async function estimateEmissions(
     total_kg: Math.round(total_kg),
     stages: stages,
   };
+}
+
+function getLocation(
+  address: AddressType,
+  label: string,
+): LocationType | ErrorType {
+  const locations = getWorldCities().getLocations(address);
+
+  if (locations.length === 0) {
+    return {
+      status: 400,
+      error: "No such '" + label + "' address",
+    };
+  }
+
+  if (locations.length > 1) {
+    return {
+      status: 400,
+      error: "Multiple cities found for '" + label + "', please specify country.",
+    };
+  }
+
+  return locations[0];
 }
