@@ -3,13 +3,15 @@ import ErrorSchema from "./ErrorSchema.ts";
 import { TransportFormEnum } from "./RouteSchema.ts";
 import { RouteId } from "./ChainSchema.ts";
 
-export const EstimationErrorSchema = ErrorSchema.or(
-  z.object({
-    error: z.literal("Could not connect locations"),
-    route_id: RouteId,
-    stage_index: z.number(),
-  }),
-);
+export const ImpossibleStageError = z.object({
+  error: z.literal("Could not connect locations"),
+  route_id: RouteId,
+  stage_index: z.number(),
+});
+
+export type ImpossibleStageType = z.infer<typeof ImpossibleStageError>;
+
+export const EstimationErrorSchema = ErrorSchema.or(ImpossibleStageError);
 
 export type EstimationErrorType = z.infer<typeof EstimationErrorSchema>;
 

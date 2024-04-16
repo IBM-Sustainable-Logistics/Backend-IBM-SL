@@ -10,7 +10,7 @@ export async function getDistance(
   to: LocationType,
 ): Promise<
   | { distance_km: number }
-  | ErrorType & WithStatus
+  | ErrorType & WithStatus<400 | 500>
   | "Could not connect locations"
 > {
   if (bingMapsKey === undefined) {

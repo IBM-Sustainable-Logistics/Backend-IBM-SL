@@ -1,11 +1,14 @@
 import { ErrorType, WithStatus } from "./components/schemas/ErrorSchema.ts";
 import { TransportForm } from "./components/schemas/RouteSchema.ts";
 import { ChainType } from "./components/schemas/ChainSchema.ts";
-import { EstimationErrorType, EstimationsType } from "./components/schemas/EstimationsSchema.ts";
+import {
+  EstimationsType,
+} from "./components/schemas/EstimationsSchema.ts";
 import { AddressType } from "./components/schemas/AddressSchema.ts";
 import { LocationType } from "./components/schemas/LocationSchema.ts";
 import { getDistance } from "./bingmaps.ts";
 import { getWorldCities } from "./citylist.ts";
+import { ImpossibleStageType } from "./components/schemas/EstimationsSchema.ts";
 
 // Emission factors use the unit kg CO2e per km for 1 ton of cargo.
 const emissionFactors: { [key in TransportForm]: number } = {
@@ -52,7 +55,11 @@ type Chain = {
 
 export async function estimateEmissions(
   input: ChainType,
-): Promise<EstimationsType | EstimationErrorType & WithStatus> {
+): Promise<
+  | EstimationsType
+  | ErrorType & WithStatus<400 | 500>
+  | ImpossibleStageType & WithStatus<400>
+> {
   const outputChain: Chain = { chain_kg: 0, routes: [] };
 
   for (let routeIndex = 0; routeIndex < input.length; routeIndex++) {
@@ -127,7 +134,7 @@ export async function estimateEmissions(
 function getLocation(
   address: AddressType,
   label: string,
-): LocationType | ErrorType & WithStatus {
+): LocationType | ErrorType & WithStatus<400> {
   const locations = getWorldCities().getLocations(address);
 
   if (locations.length === 0) {

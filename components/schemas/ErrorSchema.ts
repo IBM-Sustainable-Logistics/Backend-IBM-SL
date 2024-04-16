@@ -1,8 +1,8 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 import { StatusCode } from "https://deno.land/x/hono@v4.0.7/utils/http-status.ts";
 
-export type WithStatus = {
-  status: StatusCode,
+export type WithStatus<Code = StatusCode> = {
+  status: Code,
 };
 
 const ErrorSchema = z.object({

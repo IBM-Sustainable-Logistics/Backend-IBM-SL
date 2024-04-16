@@ -22,9 +22,18 @@ app.openapi(
     const result = await estimateEmissions(await c.req.json());
 
     if ("status" in result) {
-      const { status, ...response } = result;
-      c.status(status);
-      return c.json(response);
+      switch (result.status) {
+        case 400: {
+          c.status(result.status);
+          const { status: _, ...response } = result;
+          return c.json(response);
+        }
+        case 500: {
+          c.status(result.status);
+          const { status: _, ...response } = result;
+          return c.json(response);
+        }
+      }
     }
 
     return c.json(result);
