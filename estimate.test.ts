@@ -128,12 +128,32 @@ Deno.test("estimate emissions from docs", { permissions: { read: true, net: true
 Deno.test("estimate impossible route", { permissions: { read: true, net: true } }, async () =>
   assertEquals(await estimateEmissions([
     {
+      id: "Possible Route",
+      stages: [
+        {
+          transport_form: "truck",
+          from: { city: "Copenhagen", country: "Denmark" },
+          to: { city: "Hamburg", country: "Germany" },
+        },
+      ],
+    },
+    {
       id: "Impossible Route",
       stages: [
         {
           transport_form: "truck",
           from: { city: "Copenhagen", country: "Denmark" },
+          to: { city: "Hamburg", country: "Germany" },
+        },
+        {
+          transport_form: "truck",
+          from: { city: "Copenhagen", country: "Denmark" },
           to: { city: "Sydney", country: "Australia" },
+        },
+        {
+          transport_form: "truck",
+          from: { city: "Copenhagen", country: "Denmark" },
+          to: { city: "Hamburg", country: "Germany" },
         },
       ],
     },
@@ -141,6 +161,8 @@ Deno.test("estimate impossible route", { permissions: { read: true, net: true } 
     {
       status: 400,
       error: "Could not connect locations",
+      route_id: "Impossible Route",
+      stage_index: 1,
     }
   )
 );
