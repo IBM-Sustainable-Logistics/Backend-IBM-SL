@@ -24,102 +24,128 @@ paths:
             schema:
               type: array
               items:
-                anyOf:
-                  - type: object
-                    properties:
-                      transport_form:
-                        type: string
-                        enum:
-                          - truck
-                          - etruck
-                          - train
-                          - aircraft
-                          - cargoship
-                        description: The vehicle type that is used in this `stage`.
-                      distance_km:
-                        type: number
-                        description: >-
-                          The distance of this `stage` of the route in
-                          kilometers.
-                    required:
-                      - transport_form
-                      - distance_km
-                  - type: object
-                    properties:
-                      transport_form:
-                        type: string
-                        enum:
-                          - truck
-                          - etruck
-                        description: The vehicle type that is used in this `stage`.
-                      from:
-                        type: object
-                        properties:
-                          city:
-                            type: string
-                            description: The city query.
-                            example: New York
-                          country:
-                            type: string
-                            description: >-
-                              The country query that the city should be in.
-                              (Optional)
-                            example: United States
-                        required:
-                          - city
-                        description: The address of the starting point of this `stage`.
-                        examples:
-                          - city: New
-                          - city: Copen
-                            country: Denmark
-                      to:
-                        type: object
-                        properties:
-                          city:
-                            type: string
-                            description: The city query.
-                            example: New York
-                          country:
-                            type: string
-                            description: >-
-                              The country query that the city should be in.
-                              (Optional)
-                            example: United States
-                        required:
-                          - city
-                        description: The address of the destination of this `stage`.
-                        examples:
-                          - city: New
-                          - city: Copen
-                            country: Denmark
-                    required:
-                      - transport_form
-                      - from
-                      - to
-                description: >-
-                  A `stage` that contains a `transport_form` and either a
-                  `distance_km` or `from` and `to`.
-                example:
-                  transport_form: truck
-                  distance_km: 100
-              description: List of objects that each represents a `stage` of the `route`.
+                type: object
+                properties:
+                  id:
+                    type: string
+                  stages:
+                    type: array
+                    items:
+                      anyOf:
+                        - type: object
+                          properties:
+                            transport_form:
+                              type: string
+                              enum:
+                                - truck
+                                - etruck
+                                - train
+                                - aircraft
+                                - cargoship
+                              description: The vehicle type that is used in this `stage`.
+                            distance_km:
+                              type: number
+                              description: >-
+                                The distance of this `stage` of the route in
+                                kilometers.
+                          required:
+                            - transport_form
+                            - distance_km
+                        - type: object
+                          properties:
+                            transport_form:
+                              type: string
+                              enum:
+                                - truck
+                                - etruck
+                              description: The vehicle type that is used in this `stage`.
+                            from:
+                              type: object
+                              properties:
+                                city:
+                                  type: string
+                                  description: The city query.
+                                  example: New York
+                                country:
+                                  type: string
+                                  description: >-
+                                    The country query that the city should be
+                                    in. (Optional)
+                                  example: United States
+                              required:
+                                - city
+                              description: >-
+                                The address of the starting point of this
+                                `stage`.
+                              examples:
+                                - city: New
+                                - city: Copen
+                                  country: Denmark
+                            to:
+                              type: object
+                              properties:
+                                city:
+                                  type: string
+                                  description: The city query.
+                                  example: New York
+                                country:
+                                  type: string
+                                  description: >-
+                                    The country query that the city should be
+                                    in. (Optional)
+                                  example: United States
+                              required:
+                                - city
+                              description: The address of the destination of this `stage`.
+                              examples:
+                                - city: New
+                                - city: Copen
+                                  country: Denmark
+                          required:
+                            - transport_form
+                            - from
+                            - to
+                      description: >-
+                        A `stage` that contains a `transport_form` and either a
+                        `distance_km` or `from` and `to`.
+                      example:
+                        transport_form: truck
+                        distance_km: 100
+                    description: >-
+                      List of objects that each represents a `stage` of the
+                      `route`.
+                    example:
+                      - transport_form: truck
+                        distance_km: 100
+                      - transport_form: truck
+                        from:
+                          city: New York
+                          country: United States
+                        to:
+                          city: Los Angeles
+                      - transport_form: etruck
+                        distance_km: 100
+                      - transport_form: train
+                        distance_km: 500
+                      - transport_form: aircraft
+                        distance_km: 300
+                      - transport_form: cargoship
+                        distance_km: 300
+                required:
+                  - id
+                  - stages
+              description: Set of objects that each represents a `route` of a `chain`.
               example:
-                - transport_form: truck
-                  distance_km: 100
-                - transport_form: truck
-                  from:
-                    city: New York
-                    country: United States
-                  to:
-                    city: Los Angeles
-                - transport_form: etruck
-                  distance_km: 100
-                - transport_form: train
-                  distance_km: 500
-                - transport_form: aircraft
-                  distance_km: 300
-                - transport_form: cargoship
-                  distance_km: 300
+                - id: Primary Route
+                  stages:
+                    - transport_form: truck
+                      distance_km: 225
+                    - transport_form: truck
+                      from:
+                        city: Copenhagen
+                      to:
+                        city: Hamburg
+                        country: Germany
       responses:
         '200':
           description: The estimated emission for each `stage` as well as the total.
