@@ -3,7 +3,7 @@ import { Index } from "./pages/index.tsx";
 import { OpenAPIHono } from "npm:@hono/zod-openapi@0.9.5";
 export const app = new OpenAPIHono();
 
-import { routeEstimateEmissions } from "./routes/estimate.ts";
+import { chainEstimateEmissions } from "./routes/estimate.ts";
 import { routeSuggestCities } from "./routes/suggest.ts";
 import { routeSuggestCitiesFuzzy } from "./routes/fuzzy.ts";
 import { swaggerUI } from "npm:@hono/swagger-ui@0.2.1";
@@ -17,7 +17,7 @@ import { suggestCities, suggestCitiesFuzzy } from "./suggest.ts";
 Index();
 
 app.openapi(
-  routeEstimateEmissions,
+  chainEstimateEmissions,
   async (c) => {
     const result = await estimateEmissions(await c.req.json());
 
