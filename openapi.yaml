@@ -232,6 +232,20 @@ paths:
           content:
             application/json:
               schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error fetching data
+                required:
+                  - error
+                description: An error response.
+                example:
+                  error: No results found
+        '500':
+          content:
+            application/json:
+              schema:
                 anyOf:
                   - type: object
                     properties:
