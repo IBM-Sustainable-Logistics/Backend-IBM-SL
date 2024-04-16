@@ -1,10 +1,14 @@
-import { ErrorType } from "./components/schemas/ErrorSchema.ts";
-import { RouteType, TransportForm } from "./components/schemas/RouteSchema.ts";
-import { EstimationsType } from "./components/schemas/EstimationsSchema.ts";
+import { ErrorType, WithStatus } from "./components/schemas/ErrorSchema.ts";
+import { TransportForm } from "./components/schemas/RouteSchema.ts";
+import { ChainType } from "./components/schemas/ChainSchema.ts";
+import {
+  EstimationsType,
+} from "./components/schemas/EstimationsSchema.ts";
 import { AddressType } from "./components/schemas/AddressSchema.ts";
 import { LocationType } from "./components/schemas/LocationSchema.ts";
 import { getDistance } from "./bingmaps.ts";
 import { getWorldCities } from "./citylist.ts";
+import { ImpossibleStageType } from "./components/schemas/EstimationsSchema.ts";
 
 // Emission factors use the unit kg CO2e per km for 1 ton of cargo.
 const emissionFactors: { [key in TransportForm]: number } = {
@@ -33,65 +37,104 @@ const emissionFactors: { [key in TransportForm]: number } = {
 //   train: 0.1, // L/km
 // } as const;
 
+type Stage = {
+  stage_kg: number;
+  transport_form: TransportForm;
+};
+
+type Route = {
+  id: string;
+  route_kg: number;
+  stages: Stage[];
+};
+
+type Chain = {
+  chain_kg: number;
+  routes: Route[];
+};
+
 export async function estimateEmissions(
-  input: RouteType,
-): Promise<EstimationsType | ErrorType> {
-  let total_kg = 0;
+  input: ChainType,
+): Promise<
+  | EstimationsType
+  | ErrorType & WithStatus<400 | 500>
+  | ImpossibleStageType & WithStatus<400>
+> {
+  const outputChain: Chain = { chain_kg: 0, routes: [] };
 
-  const stages: { kg: number; transport_form: TransportForm }[] = [];
+  for (let routeIndex = 0; routeIndex < input.length; routeIndex++) {
+    const inputRoute = input[routeIndex];
 
-  for (let i = 0; i < input.length; i++) {
-    const stage = input[i];
+    const outputRoute: Route = { id: inputRoute.id, route_kg: 0, stages: [] };
+    outputChain.routes.push(outputRoute);
 
-    const emissionFactor = emissionFactors[stage.transport_form];
-    const cargoWeight = 10;
+    for (
+      let stageIndex = 0;
+      stageIndex < input[routeIndex].stages.length;
+      stageIndex++
+    ) {
+      const inputStage = inputRoute.stages[stageIndex];
 
-    if ("distance_km" in stage) {
-      const emission = emissionFactor * stage.distance_km * cargoWeight;
-      total_kg += emission;
+      const emissionFactor = emissionFactors[inputStage.transport_form];
+      const cargoWeight = 10;
 
-      stages[i] = {
-        kg: Math.round(emission),
-        transport_form: stage.transport_form,
-      };
-    } else {
-      const from = getLocation(stage.from, "from");
-      if ("error" in from) {
-        return from;
+      if ("distance_km" in inputStage) {
+        const emission = emissionFactor * inputStage.distance_km * cargoWeight;
+        outputChain.chain_kg += emission;
+        outputRoute.route_kg += emission;
+
+        outputRoute.stages.push({
+          stage_kg: Math.round(emission),
+          transport_form: inputStage.transport_form,
+        });
+      } else {
+        const from = getLocation(inputStage.from, "from");
+        if ("error" in from) {
+          return from;
+        }
+
+        const to = getLocation(inputStage.to, "to");
+        if ("error" in to) {
+          return to;
+        }
+
+        const response = await getDistance(from, to);
+
+        if (response === "Could not connect locations") {
+          return {
+            status: 400,
+            error: response,
+            route_id: inputRoute.id,
+            stage_index: stageIndex,
+          };
+        }
+
+        if ("error" in response) {
+          return response;
+        }
+
+        const emission = emissionFactor * response.distance_km * cargoWeight;
+        outputChain.chain_kg += emission;
+        outputRoute.route_kg += emission;
+
+        outputRoute.stages.push({
+          stage_kg: Math.round(emission),
+          transport_form: inputStage.transport_form,
+        });
       }
-
-      const to = getLocation(stage.to, "to");
-      if ("error" in to) {
-        return to;
-      }
-
-      const response = await getDistance(from, to);
-
-      if ("error" in response) {
-        return response;
-      }
-
-      const emission = emissionFactor * response.distance_km * cargoWeight;
-      total_kg += emission;
-
-      stages[i] = {
-        kg: Math.round(emission),
-        transport_form: stage.transport_form,
-      };
     }
+
+    outputRoute.route_kg = Math.round(outputRoute.route_kg);
   }
 
-  return {
-    status: 200,
-    total_kg: Math.round(total_kg),
-    stages: stages,
-  };
+  outputChain.chain_kg = Math.round(outputChain.chain_kg);
+  return outputChain;
 }
 
 function getLocation(
   address: AddressType,
   label: string,
-): LocationType | ErrorType {
+): LocationType | ErrorType & WithStatus<400> {
   const locations = getWorldCities().getLocations(address);
 
   if (locations.length === 0) {
@@ -104,7 +147,8 @@ function getLocation(
   if (locations.length > 1) {
     return {
       status: 400,
-      error: "Multiple cities found for '" + label + "', please specify country.",
+      error: "Multiple cities found for '" + label +
+        "', please specify country.",
     };
   }
 

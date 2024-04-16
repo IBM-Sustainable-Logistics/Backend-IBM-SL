@@ -25,16 +25,16 @@ CSV format
 
  */
 
-type CityQuery = { city: string; country?: string };
-type CitySuggestion = { city: string; country: string };
-type CityData = {
+type Query = { city: string; country?: string };
+type Suggestion = { city: string; country: string };
+type Data = {
   lat: number;
   lon: number;
   country: string;
   population: number;
   id: number;
 };
-type CityEntry = { city: string; data: CityData };
+type CityEntry = { city: string; data: Data };
 
 export default class CityList {
   private trie: TrieNode;
@@ -43,7 +43,7 @@ export default class CityList {
     this.trie = { children: [], datas: undefined };
   }
 
-  public getAutoSuggestions(query: CityQuery): CitySuggestion[] {
+  public getAutoSuggestions(query: Query): Suggestion[] {
     const queryCountry = query.country;
 
     const node = node_get(this.trie, query.city);
@@ -77,8 +77,44 @@ export default class CityList {
     }));
   }
 
+  public getAutoSuggestionsFuzzy(query: Query): Suggestion[] {
+    const _queryCountry = query.country;
+
+    const nodes = node_get_fuzzy(this.trie, query.city, 1);
+    if (nodes.length === 0) {
+      return [];
+    }
+
+    const array: CityEntry[] = [];
+    for (const node of nodes) {
+      node_get_all_from(
+        node.node,
+        undefined,
+        (_e) => {
+          // if (queryCountry !== undefined && !e.data.country.startsWith(queryCountry)) {
+          //   return false;
+          // }
+
+          // if (array.some((o) => e.city === o.city && e.data.country === o.data.country)) {
+          //   return false;
+          // }
+
+          return true;
+        },
+        undefined,
+        "",
+        array,
+      );
+    }
+
+    return array.map((e) => ({
+      city: query.city + e.city,
+      country: e.data.country,
+    }));
+  }
+
   public getLocations(
-    query: CityQuery,
+    query: Query,
   ): LocationType[] {
     const node = node_get(this.trie, query.city);
 
@@ -103,7 +139,7 @@ export default class CityList {
     return array.map((d) => ({ lat: d.lat, lon: d.lon }));
   }
 
-  public insert(city: string, data: CityData): void {
+  public insert(city: string, data: Data): void {
     node_insert(this.trie, city, data);
   }
 }
@@ -115,10 +151,10 @@ type TrieNode = {
    * Contains data if the current node is a valid city.
    * Otherwise, it is undefined.
    */
-  datas: undefined | CityData[];
+  datas: undefined | Data[];
 };
 
-function node_insert(node: TrieNode, city: string, data: CityData): void {
+function node_insert(node: TrieNode, city: string, data: Data): void {
   if (city.length > 0) {
     const char = city.charAt(0);
 
@@ -161,22 +197,80 @@ function node_get(node: TrieNode, city: string): undefined | TrieNode {
   return undefined;
 }
 
+type FuzzyQuery = {
+  char: string;
+  correct: boolean;
+}[];
+
+type FuzzyEntry = {
+  node: TrieNode,
+  query: FuzzyQuery,
+  score: number,
+};
+
+function node_get_fuzzy(node: TrieNode, city: string, incorrects_left: number, query: FuzzyQuery = [], array: FuzzyEntry[] = []): FuzzyEntry[] {
+  if (city.length === 0) {
+    array.push({
+      node: node,
+      query: query,
+      score: -incorrects_left,
+    });
+  }
+
+  const next_char = city[0];
+
+  for (const child of node.children) {
+    // If correct
+    if (child.char == next_char) {
+      const new_query = query.concat({
+          char: next_char,
+          correct: true,
+      });
+
+      return node_get_fuzzy(child.node, city.slice(1), incorrects_left, new_query, array);
+    }
+
+    if (incorrects_left <= 0) {
+      continue;
+    }
+
+    // Assume user typed an extra character
+    {
+      const new_query = query.concat({
+        char: next_char,
+        correct: false,
+      });
+
+      node_get_fuzzy(child.node, city, incorrects_left - 1, new_query, array);
+    }
+
+    // Assume user typed incorrect character
+    {
+      const new_query = query.concat({
+        char: child.char,
+        correct: false,
+      });
+
+      node_get_fuzzy(child.node, city.slice(1), incorrects_left - 1, new_query, array);
+    }
+
+    // Assume user skipped a character
+    {
+      node_get_fuzzy(child.node, city.slice(1), incorrects_left - 1, query, array);
+    }
+  }
+
+  return array;
+}
+
 function node_get_all_from(
   node: TrieNode,
-  compare?: (a: CityData, b: CityData) => number,
+  compare?: (a: Data, b: Data) => number,
   predicate?: (entry: CityEntry) => boolean,
   limit?: number,
-  city?: string,
-  array?: CityEntry[],
+  city = "",
+  array: CityEntry[] = [],
 ): CityEntry[] {
-  if (city === undefined) {
-    city = "";
-  }
-
-  if (array === undefined) {
-    array = [];
-  }
-
   if (limit !== undefined && array.length >= limit) {
     return array;
   }
