@@ -2,31 +2,53 @@ import { z } from "npm:@hono/zod-openapi@0.9.5";
 import { TransportFormEnum } from "./RouteSchema.ts";
 
 const EstimationsSchema = z.object({
-  status: z.number()
-    .openapi({ example: 200 }),
-  total_kg: z.number()
+  chain_kg: z.number()
     .openapi({
-      description:
-        "The estimated emission for the whole route in kilograms, i.e. the sum of each `stage`.",
+      description: "The estimated emission for the whole `chain` in kilograms, " +
+                   "i.e. the sum of each `route` (before rounding).",
+      example: 217,
     }),
-  stages: z.array(z.object({
-      kg: z.number()
-        .openapi({
-          description: "The estimated emissions for this `stage`.",
-        }),
-      transport_form: TransportFormEnum,
-  }))
+  routes: z.array(z.object({
+    route_kg: z.number()
+      .openapi({
+        description: "The estimated emission for the `route` in kilograms.",
+      }),
+    stages: z.array(z.object({
+        stage_kg: z.number()
+          .openapi({
+            description: "The estimated emissions for this `stage`.",
+          }),
+        transport_form: TransportFormEnum,
+    })),
+  })),
 })
 .openapi({
   description:
-  "The estimated emission for each `stage` as well as the total.",
+    "The estimations for this chain as well as the total. " +
+    "All the estimations are rounded to nearest integer, " +
+    "though, to not lose too much precision, " +
+    "the sums have been calculated before rounding.",
   example: {
-    status: 200,
-    total_kg: 300,
-    stages: [
-      { kg: 100, transport_form: "truck" },
-      { kg: 200, transport_form: "etruck" },
-    ],
+    chain_kg: 7057,
+    routes: [
+      {
+        route_kg: 6713,
+        stages: [
+          { stage_kg: 105, transport_form: "truck" },
+          { stage_kg: 4713, transport_form: "truck" },
+          { stage_kg: 70, transport_form: "etruck" },
+          { stage_kg: 325, transport_form: "train" },
+          { stage_kg: 1500, transport_form: "aircraft" },
+        ],
+      },
+      {
+        route_kg: 344,
+        stages: [
+          { stage_kg: 134, transport_form: "etruck" },
+          { stage_kg: 210, transport_form: "train" },
+        ],
+      },
+    ]
   },
 });
 

@@ -1,4 +1,3 @@
-
 import YAML from "npm:js-yaml";
 import { Index } from "./pages/index.tsx";
 import { OpenAPIHono } from "npm:@hono/zod-openapi@0.9.5";
@@ -6,10 +5,11 @@ export const app = new OpenAPIHono();
 
 import { routeEstimateEmissions } from "./routes/estimate.ts";
 import { routeSuggestCities } from "./routes/suggest.ts";
+import { routeSuggestCitiesFuzzy } from "./routes/fuzzy.ts";
 import { swaggerUI } from "npm:@hono/swagger-ui@0.2.1";
 
 import { estimateEmissions } from "./estimate.ts";
-import { suggestCities } from "./suggest.ts";
+import { suggestCities, suggestCitiesFuzzy } from "./suggest.ts";
 
 // --- API ---
 
@@ -18,12 +18,47 @@ Index();
 
 app.openapi(
   routeEstimateEmissions,
-  async (c) => c.json(await estimateEmissions(await c.req.json())),
+  async (c) => {
+    const result = await estimateEmissions(await c.req.json());
+
+    if ("status" in result) {
+      const { status, ...response } = result;
+      c.status(status);
+      return c.json(response);
+    }
+
+    return c.json(result);
+  },
 );
 
 app.openapi(
   routeSuggestCities,
-  async (c) => c.json(suggestCities(await c.req.json())),
+  async (c) => {
+    const result = suggestCities(await c.req.json());
+
+    if ("status" in result) {
+      const { status, ...response } = result;
+      c.status(status);
+      return c.json(response);
+    }
+
+    return c.json(result);
+  },
+);
+
+app.openapi(
+  routeSuggestCitiesFuzzy,
+  async (c) => {
+    const result = suggestCitiesFuzzy(await c.req.json());
+
+    if ("status" in result) {
+      const { status, ...response } = result;
+      c.status(status);
+      return c.json(response);
+    }
+
+    return c.json(result);
+  },
 );
 
 // --- Docs ---

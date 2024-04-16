@@ -1,11 +1,13 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 import AddressSchema from "./AddressSchema.ts";
 
-export const TransportFormEnum =
-  z.enum([ "truck", "etruck", "train", "aircraft", "cargoship"])
-  .openapi({
-    description: "The vehicle type that is used in this `stage`.",
-  });
+const truckForms = [
+  "truck", "etruck",
+] as const;
+
+const transportForms = [
+  ...truckForms, "train", "aircraft", "cargoship"
+] as const;
 
 export const TruckFormEnum =
   z.enum(["truck", "etruck"])
@@ -13,8 +15,14 @@ export const TruckFormEnum =
     description: "The vehicle type that is used in this `stage`.",
   });
 
-export type TransportForm = z.infer<typeof TransportFormEnum>;
+export const TransportFormEnum =
+  z.enum(transportForms)
+  .openapi({
+    description: "The vehicle type that is used in this `stage`.",
+  });
+
 export type TruckForm = z.infer<typeof TruckFormEnum>;
+export type TransportForm = z.infer<typeof TransportFormEnum>;
 
 const RouteSchema = z.array(
   z.object({
@@ -23,7 +31,8 @@ const RouteSchema = z.array(
       .openapi({
         description: "The distance of this `stage` of the route in kilometers.",
       }),
-  }).or(z.object({
+  })
+  .or(z.object({
     transport_form: TruckFormEnum,
     from: AddressSchema
       .openapi({
@@ -35,16 +44,20 @@ const RouteSchema = z.array(
       }),
   }))
   .openapi({
-    description:
-      "A `stage` that contains a `transport_form` and either a `distance_km` or `from` and `to`.",
+    description: "A `stage` that contains a `transport_form` and either a " +
+                 "`distance_km` or `from` and `to`.",
     example: { transport_form: "truck", distance_km: 100 },
   }),
 )
 .openapi({
-  description: "List of objects that each represents a `stage` of the route.",
+  description: "List of objects that each represents a `stage` of the `route`.",
   example: [
     { transport_form: "truck", distance_km: 100 },
-    { transport_form: "truck", from: { city: "New York", country: "United States" }, to: { city: "Los Angeles", } },
+    {
+      transport_form: "truck",
+      from: { city: "New York", country: "United States" },
+      to: { city: "Los Angeles", }
+    },
     { transport_form: "etruck", distance_km: 100 },
     { transport_form: "train", distance_km: 500 },
     { transport_form: "aircraft", distance_km: 300 },
