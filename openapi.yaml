@@ -139,6 +139,10 @@ paths:
                     items:
                       type: object
                       properties:
+                        id:
+                          type: string
+                          description: A identifier that uniquely identifies a `route`.
+                          example: Route 1
                         route_kg:
                           type: number
                           description: The estimated emission for the `route` in kilograms.
@@ -163,6 +167,7 @@ paths:
                               - stage_kg
                               - transport_form
                       required:
+                        - id
                         - route_kg
                         - stages
                 required:
@@ -176,7 +181,8 @@ paths:
                 example:
                   chain_kg: 7057
                   routes:
-                    - route_kg: 6713
+                    - id: Primary Route
+                      route_kg: 6713
                       stages:
                         - stage_kg: 105
                           transport_form: truck
@@ -188,7 +194,8 @@ paths:
                           transport_form: train
                         - stage_kg: 1500
                           transport_form: aircraft
-                    - route_kg: 344
+                    - id: Secondary Route
+                      route_kg: 344
                       stages:
                         - stage_kg: 134
                           transport_form: etruck
@@ -199,16 +206,33 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: Error fetching data
-                required:
-                  - error
-                description: An error response.
-                example:
-                  error: No results found
+                anyOf:
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        example: Error fetching data
+                    required:
+                      - error
+                    description: An error response.
+                    example:
+                      error: No results found
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        enum:
+                          - Could not connect locations
+                      route_id:
+                        type: string
+                        description: A identifier that uniquely identifies a `route`.
+                        example: Route 1
+                      stage_index:
+                        type: number
+                    required:
+                      - error
+                      - route_id
+                      - stage_index
   /api/suggest:
     post:
       description: 'TODO: Add description'

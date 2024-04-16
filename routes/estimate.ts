@@ -1,7 +1,6 @@
 import { createRoute } from "npm:@hono/zod-openapi@0.9.5";
 import RouteSchema from "../components/schemas/RouteSchema.ts";
-import EstimationsSchema from "../components/schemas/EstimationsSchema.ts";
-import ErrorSchema from "../components/schemas/ErrorSchema.ts";
+import EstimationsSchema, { EstimationErrorSchema } from "../components/schemas/EstimationsSchema.ts";
 
 export const routeEstimateEmissions = createRoute({
   method: "post",
@@ -28,7 +27,7 @@ export const routeEstimateEmissions = createRoute({
     400: {
       content: {
         "application/json": {
-          schema: ErrorSchema,
+          schema: EstimationErrorSchema,
         },
       },
       description: "Returns an error",

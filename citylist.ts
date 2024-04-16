@@ -78,7 +78,7 @@ export default class CityList {
   }
 
   public getAutoSuggestionsFuzzy(query: Query): Suggestion[] {
-    const queryCountry = query.country;
+    const _queryCountry = query.country;
 
     const nodes = node_get_fuzzy(this.trie, query.city, 1);
     if (nodes.length === 0) {
@@ -90,7 +90,7 @@ export default class CityList {
       node_get_all_from(
         node.node,
         undefined,
-        (e) => {
+        (_e) => {
           // if (queryCountry !== undefined && !e.data.country.startsWith(queryCountry)) {
           //   return false;
           // }

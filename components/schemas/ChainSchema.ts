@@ -1,6 +1,12 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 import RouteSchema from "./RouteSchema.ts";
 
+export const RouteId = z.string()
+  .openapi({
+    description: "A identifier that uniquely identifies a `route`.",
+    example: "Route 1",
+  });
+
 const ChainSchema = z.array(
   z.object({
     id: z.string(),

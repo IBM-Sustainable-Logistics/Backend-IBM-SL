@@ -1,5 +1,17 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
+import ErrorSchema from "./ErrorSchema.ts";
 import { TransportFormEnum } from "./RouteSchema.ts";
+import { RouteId } from "./ChainSchema.ts";
+
+export const EstimationErrorSchema = ErrorSchema.or(
+  z.object({
+    error: z.literal("Could not connect locations"),
+    route_id: RouteId,
+    stage_index: z.number(),
+  }),
+);
+
+export type EstimationErrorType = z.infer<typeof EstimationErrorSchema>;
 
 const EstimationsSchema = z.object({
   chain_kg: z.number()
@@ -9,6 +21,7 @@ const EstimationsSchema = z.object({
       example: 217,
     }),
   routes: z.array(z.object({
+    id: RouteId,
     route_kg: z.number()
       .openapi({
         description: "The estimated emission for the `route` in kilograms.",
@@ -32,6 +45,7 @@ const EstimationsSchema = z.object({
     chain_kg: 7057,
     routes: [
       {
+        id: "Primary Route",
         route_kg: 6713,
         stages: [
           { stage_kg: 105, transport_form: "truck" },
@@ -42,6 +56,7 @@ const EstimationsSchema = z.object({
         ],
       },
       {
+        id: "Secondary Route",
         route_kg: 344,
         stages: [
           { stage_kg: 134, transport_form: "etruck" },

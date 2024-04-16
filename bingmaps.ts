@@ -5,7 +5,14 @@ import { load } from "https://deno.land/std@0.219.0/dotenv/mod.ts";
 const bingMapsKey = (await load()).BING_MAPS_KEY ||
   Deno.env.get("BING_MAPS_KEY");
 
-export async function getDistance(from: LocationType, to: LocationType): Promise<{ distance_km: number } | ErrorType & WithStatus> {
+export async function getDistance(
+  from: LocationType,
+  to: LocationType,
+): Promise<
+  | { distance_km: number }
+  | ErrorType & WithStatus
+  | "Could not connect locations"
+> {
   if (bingMapsKey === undefined) {
     return { status: 500, error: "Bing Maps API key not found" };
   }
@@ -34,7 +41,7 @@ export async function getDistance(from: LocationType, to: LocationType): Promise
     json.resourceSets[0].resources[0].results[0].travelDistance;
 
   if (distance_km < 0) {
-    return { status: 400, error: "Could not connect locations" };
+    return "Could not connect locations";
   }
 
   return { distance_km: distance_km };

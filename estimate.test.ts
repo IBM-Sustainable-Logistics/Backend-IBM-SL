@@ -23,6 +23,7 @@ Deno.test("estimate emissions distances only", { }, async () =>
       chain_kg: 896,
       routes: [
         {
+          id: "Route 1",
           route_kg: 896,
           stages: [
             { stage_kg: 11, transport_form: "truck" },
@@ -55,6 +56,7 @@ Deno.test("estimate emissions from-to city only", { permissions: { read: true, n
       chain_kg: 31,
       routes: [
         {
+          id: "Route",
           route_kg: 31,
           stages: [
             { stage_kg: 31, transport_form: "truck" },
@@ -78,6 +80,7 @@ Deno.test("estimate emissions from-to city and country", { permissions: { read: 
       chain_kg: 4740,
       routes: [
         {
+          id: "Route using addresses",
           route_kg: 4740,
           stages: [
             { stage_kg: 4740, transport_form: "truck" },
@@ -106,6 +109,7 @@ Deno.test("estimate emissions from docs", { permissions: { read: true, net: true
       chain_kg: 6816,
       routes: [
         {
+          id: "Example Route",
           route_kg: 6816,
           stages: [
             { stage_kg: 105, transport_form: "truck" },
@@ -126,7 +130,8 @@ Deno.test("estimate impossible route", { permissions: { read: true, net: true } 
     {
       id: "Impossible Route",
       stages: [
-        { transport_form: "truck",
+        {
+          transport_form: "truck",
           from: { city: "Copenhagen", country: "Denmark" },
           to: { city: "Sydney", country: "Australia" },
         },

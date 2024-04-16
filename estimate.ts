@@ -1,7 +1,7 @@
 import { ErrorType, WithStatus } from "./components/schemas/ErrorSchema.ts";
 import { TransportForm } from "./components/schemas/RouteSchema.ts";
 import { ChainType } from "./components/schemas/ChainSchema.ts";
-import { EstimationsType } from "./components/schemas/EstimationsSchema.ts";
+import { EstimationErrorType, EstimationsType } from "./components/schemas/EstimationsSchema.ts";
 import { AddressType } from "./components/schemas/AddressSchema.ts";
 import { LocationType } from "./components/schemas/LocationSchema.ts";
 import { getDistance } from "./bingmaps.ts";
@@ -40,6 +40,7 @@ type Stage = {
 };
 
 type Route = {
+  id: string;
   route_kg: number;
   stages: Stage[];
 };
@@ -51,13 +52,13 @@ type Chain = {
 
 export async function estimateEmissions(
   input: ChainType,
-): Promise<EstimationsType | ErrorType & WithStatus> {
+): Promise<EstimationsType | EstimationErrorType & WithStatus> {
   const outputChain: Chain = { chain_kg: 0, routes: [] };
 
   for (let routeIndex = 0; routeIndex < input.length; routeIndex++) {
     const inputRoute = input[routeIndex];
 
-    const outputRoute: Route = { route_kg: 0, stages: [] };
+    const outputRoute: Route = { id: inputRoute.id, route_kg: 0, stages: [] };
     outputChain.routes.push(outputRoute);
 
     for (
@@ -91,6 +92,15 @@ export async function estimateEmissions(
         }
 
         const response = await getDistance(from, to);
+
+        if (response === "Could not connect locations") {
+          return {
+            status: 400,
+            error: response,
+            route_id: inputRoute.id,
+            stage_index: stageIndex,
+          };
+        }
 
         if ("error" in response) {
           return response;
