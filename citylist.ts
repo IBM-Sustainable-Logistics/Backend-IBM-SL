@@ -60,7 +60,7 @@ export default class CityList {
           return false;
         }
 
-        if (array.some((o) => e.data.id && o.data.id)) {
+        if (array.some((o) => e.data.id === o.data.id)) {
           return false;
         }
 
@@ -72,7 +72,7 @@ export default class CityList {
     );
 
     return array.map((e) => ({
-      city: query.city + e.city,
+      city: e.city,
       country: e.data.country,
     }));
   }
