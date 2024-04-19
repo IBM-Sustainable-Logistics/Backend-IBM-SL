@@ -101,7 +101,7 @@ export default class CityList {
 
           return true;
         },
-        100,
+        10,
         entry.city,
         array,
       );
