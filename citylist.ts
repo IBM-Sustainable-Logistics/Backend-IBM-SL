@@ -80,16 +80,18 @@ export default class CityList {
   public getAutoSuggestionsFuzzy(query: Query): Suggestion[] {
     const queryCountry = query.country;
 
-    const nodes = node_get_fuzzy(this.trie, query.city, query.city.length / 4 + 1);
-    if (nodes.length === 0) {
+    const entries = node_get_fuzzy(this.trie, query.city, query.city.length / 4 + 1);
+    if (entries.length === 0) {
       return [];
     }
 
+    entries.sort((a, b) => b.score - a.score);
+
     let array: CityEntry[] = [];
-    for (const entry of nodes) {
+    for (const entry of entries) {
       node_get_all_from(
         entry.node,
-        undefined,
+        (a, b) => a.population - b.population,
         (e) => {
           if (queryCountry !== undefined && !e.data.country.startsWith(queryCountry)) {
              return false;
@@ -211,7 +213,7 @@ function node_get_fuzzy(node: TrieNode, query: string, incorrects_left: number, 
     array.push({
       node: node,
       city: city,
-      score: -incorrects_left,
+      score: incorrects_left,
     });
     return array;
   }
