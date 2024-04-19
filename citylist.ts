@@ -224,6 +224,7 @@ function node_get_fuzzy(node: TrieNode, query: string, incorrects_left: number, 
     // If correct
     if (child_char == next_char) {
       node_get_fuzzy(child.node, query.slice(1), incorrects_left, city + child.char, array);
+      return array;
     }
 
     if (incorrects_left <= 0) {
@@ -232,14 +233,14 @@ function node_get_fuzzy(node: TrieNode, query: string, incorrects_left: number, 
 
     // Assume user typed an extra character
     if (!extra) {
-      node_get_fuzzy(node, query.slice(1), incorrects_left - 1, city, array, true);
+      // node_get_fuzzy(node, query.slice(1), incorrects_left - 1, city, array, true);
     }
 
     // Assume user typed incorrect character
     node_get_fuzzy(child.node, query.slice(1), incorrects_left - 1, city + child.char, array);
 
     // Assume user skipped a character
-    node_get_fuzzy(child.node, query, incorrects_left - 1, city + child.char, array);
+    // node_get_fuzzy(child.node, query, incorrects_left - 1, city + child.char, array);
   }
 
   return array;
