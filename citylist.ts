@@ -60,14 +60,14 @@ export default class CityList {
           return false;
         }
 
-        if (array.some((o) => e.city === o.city && e.data.country === o.data.country)) {
+        if (array.some((o) => e.data.id && o.data.id)) {
           return false;
         }
 
         return true;
       },
       10,
-      "",
+      query.city,
       array,
     );
 
@@ -78,39 +78,42 @@ export default class CityList {
   }
 
   public getAutoSuggestionsFuzzy(query: Query): Suggestion[] {
-    const _queryCountry = query.country;
+    const queryCountry = query.country;
 
-    const nodes = node_get_fuzzy(this.trie, query.city, 1);
+    const nodes = node_get_fuzzy(this.trie, query.city, query.city.length / 4 + 1);
     if (nodes.length === 0) {
       return [];
     }
 
-    const array: CityEntry[] = [];
-    for (const node of nodes) {
+    let array: CityEntry[] = [];
+    for (const entry of nodes) {
       node_get_all_from(
-        node.node,
+        entry.node,
         undefined,
-        (_e) => {
-          // if (queryCountry !== undefined && !e.data.country.startsWith(queryCountry)) {
-          //   return false;
-          // }
+        (e) => {
+          if (queryCountry !== undefined && !e.data.country.startsWith(queryCountry)) {
+             return false;
+          }
 
-          // if (array.some((o) => e.city === o.city && e.data.country === o.data.country)) {
-          //   return false;
-          // }
+          if (array.some((o) => e.data.id === o.data.id)) {
+            return false;
+          }
 
           return true;
         },
-        undefined,
-        "",
+        100,
+        entry.city,
         array,
       );
     }
 
+    array = [...new Set(array)];
+
     return array.map((e) => ({
-      city: query.city + e.city,
+      city: e.city,
       country: e.data.country,
-    }));
+    }))
+    .slice(0, 10);
   }
 
   public getLocations(
@@ -181,53 +184,46 @@ function node_insert(node: TrieNode, city: string, data: Data): void {
   return;
 }
 
-function node_get(node: TrieNode, city: string): undefined | TrieNode {
-  if (city.length === 0) {
+function node_get(node: TrieNode, query: string): undefined | TrieNode {
+  if (query.length === 0) {
     return node;
   }
 
-  const char = city[0];
+  const char = query[0];
 
   for (const child of node.children) {
     if (child.char == char) {
-      return node_get(child.node, city.slice(1));
+      return node_get(child.node, query.slice(1));
     }
   }
 
   return undefined;
 }
 
-type FuzzyQuery = {
-  char: string;
-  correct: boolean;
-}[];
-
 type FuzzyEntry = {
   node: TrieNode,
-  query: FuzzyQuery,
+  city: string,
   score: number,
 };
 
-function node_get_fuzzy(node: TrieNode, city: string, incorrects_left: number, query: FuzzyQuery = [], array: FuzzyEntry[] = []): FuzzyEntry[] {
-  if (city.length === 0) {
+function node_get_fuzzy(node: TrieNode, query: string, incorrects_left: number, city = "", array: FuzzyEntry[] = [], extra = false): FuzzyEntry[] {
+  if (query.length === 0) {
     array.push({
       node: node,
-      query: query,
+      city: city,
       score: -incorrects_left,
     });
+    return array;
   }
 
-  const next_char = city[0];
+  const next_char = query[0].toLowerCase();
 
   for (const child of node.children) {
-    // If correct
-    if (child.char == next_char) {
-      const new_query = query.concat({
-          char: next_char,
-          correct: true,
-      });
+    const child_char = child.char.toLowerCase();
 
-      return node_get_fuzzy(child.node, city.slice(1), incorrects_left, new_query, array);
+    // If correct
+    if (child_char == next_char) {
+      node_get_fuzzy(child.node, query.slice(1), incorrects_left, city + child.char, array);
     }
 
     if (incorrects_left <= 0) {
@@ -235,29 +231,15 @@ function node_get_fuzzy(node: TrieNode, city: string, incorrects_left: number, q
     }
 
     // Assume user typed an extra character
-    {
-      const new_query = query.concat({
-        char: next_char,
-        correct: false,
-      });
-
-      node_get_fuzzy(child.node, city, incorrects_left - 1, new_query, array);
+    if (!extra) {
+      node_get_fuzzy(node, query.slice(1), incorrects_left - 1, city, array, true);
     }
 
     // Assume user typed incorrect character
-    {
-      const new_query = query.concat({
-        char: child.char,
-        correct: false,
-      });
-
-      node_get_fuzzy(child.node, city.slice(1), incorrects_left - 1, new_query, array);
-    }
+    node_get_fuzzy(child.node, query.slice(1), incorrects_left - 1, city + child.char, array);
 
     // Assume user skipped a character
-    {
-      node_get_fuzzy(child.node, city.slice(1), incorrects_left - 1, query, array);
-    }
+    node_get_fuzzy(child.node, query, incorrects_left - 1, city + child.char, array);
   }
 
   return array;
