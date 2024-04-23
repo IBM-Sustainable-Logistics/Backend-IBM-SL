@@ -1,6 +1,6 @@
 
 import { assertEquals } from "https://deno.land/std@0.220.0/assert/mod.ts";
-import { suggestCities } from "./suggest.ts";
+import { suggestCities, suggestCitiesFuzzy } from "./suggest.ts";
 
 Deno.test("suggest cities 'Empty'", { }, () => {
   assertEquals(suggestCities({ city: "Empty" }), []);
@@ -71,6 +71,28 @@ Deno.test("suggest cities 'New'", { }, () => {
       { city: "New Hyde Park", country: "United States", },
       { city: "New Delhi", country: "India", },
       { city: "New Bedford", country: "United States" },
+    ]
+  );
+});
+
+Deno.test("fuzzy cities 'København'", { }, () => {
+  assertEquals(suggestCitiesFuzzy({ city: "København" }),
+    [
+      { city: "København", country: "Denmark", },
+      { city: "Københoved", country: "Denmark", },
+      { city: "Babenhausen", country: "Germany", },
+      { city: "Rødbyhavn", country: "Denmark", },
+    ]
+  );
+});
+
+Deno.test("fuzzy cities 'Kopenhag, Denmark'", { }, () => {
+  assertEquals(suggestCitiesFuzzy({ city: "Kobenhavn", country: "Denmark" }),
+    [
+      { city: "København", country: "Denmark", },
+      { city: "Københoved", country: "Denmark", },
+      { city: "Copenhagen", country: "Denmark", },
+      { city: "Bork Havn", country: "Denmark", },
     ]
   );
 });

@@ -2,6 +2,9 @@ import { LocationType } from "./components/schemas/LocationSchema.ts";
 import { addWorldCities } from "./worldcities.ts";
 import { addDanishCities } from "./danishcities.ts";
 
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter/Segmenter
+const segmenter = new Intl.Segmenter();
+
 let world_cities: CityList | undefined = undefined;
 
 export function getWorldCities(): CityList {
@@ -13,28 +16,15 @@ export function getWorldCities(): CityList {
   return world_cities;
 }
 
-/*
-CSV format
-
-  Name:
-    The city names are both stored with Unicode characters, `city`, and Ascii, `city_ascii`.
-
-  Coordinates:
-    The columns: `lat` and `lng` respectively contains the latitude and longitude,
-
-  Country:
-    The `country` is the country where the city is located.
-
- */
-
 type Query = { city: string; country?: string };
 type Suggestion = { city: string; country: string };
 type Data = {
-  lat: number;
-  lon: number;
+  id: number;
+  city: string;
   country: string;
   population: number;
-  id: number;
+  lat: number;
+  lon: number;
 };
 type CityEntry = { city: string; data: Data };
 
@@ -42,38 +32,40 @@ export default class CityList {
   private trie: TrieNode;
 
   public constructor() {
-    this.trie = { children: [], datas: undefined };
+    this.trie = { children: [], leaf: undefined };
   }
 
   public getAutoSuggestions(query: Query): Suggestion[] {
     const queryCountry = query.country;
 
-    const node = node_get(this.trie, query.city);
+    const querySegments = [...segmenter.segment(query.city)];
+
+    const node = node_get(this.trie, querySegments);
+
     if (node === undefined) {
       return [];
     }
 
-    const array: CityEntry[] = [];
+    const entries: CityEntry[] = [];
     node_get_all_from(
       node,
       (a, b) => a.population - b.population,
-      (e) => {
-        if (queryCountry !== undefined && !e.data.country.startsWith(queryCountry)) {
+      (data) => {
+        if (queryCountry !== undefined && !data.country.startsWith(queryCountry)) {
           return false;
         }
 
-        if (array.some((o) => e.city === o.city && e.data.country === o.data.country)) {
+        if (entries.some((other) => data.city === other.city && data.country === other.data.country)) {
           return false;
         }
 
         return true;
       },
       10,
-      query.city,
-      array,
+      entries,
     );
 
-    return array.map((e) => ({
+    return entries.map((e) => ({
       city: e.city,
       country: e.data.country,
     }));
@@ -82,38 +74,41 @@ export default class CityList {
   public getAutoSuggestionsFuzzy(query: Query): Suggestion[] {
     const queryCountry = query.country;
 
-    const entries = node_get_fuzzy(this.trie, query.city, query.city.length / 4 + 1);
-    if (entries.length === 0) {
+    const querySegments = [...segmenter.segment(query.city)];
+
+    const nodes: FuzzyEntry[] = [];
+    node_get_fuzzy(this.trie, querySegments, 1 + query.city.length / 4, nodes);
+
+    if (nodes.length === 0) {
       return [];
     }
 
-    entries.sort((a, b) => b.score - a.score);
+    nodes.sort((a, b) => b.score - a.score);
 
-    let array: CityEntry[] = [];
-    for (const entry of entries) {
+    let entries: CityEntry[] = [];
+    for (const entry of nodes) {
       node_get_all_from(
         entry.node,
         (a, b) => a.population - b.population,
-        (e) => {
-          if (queryCountry !== undefined && !e.data.country.startsWith(queryCountry)) {
+        (data) => {
+          if (queryCountry !== undefined && !data.country.startsWith(queryCountry)) {
              return false;
           }
 
-          if (array.some((o) => e.city === o.city && e.data.country === o.data.country)) {
+          if (entries.some((other) => data.city === other.city && data.country === other.data.country)) {
             return false;
           }
 
           return true;
         },
         100,
-        entry.city,
-        array,
+        entries,
       );
     }
 
-    array = [...new Set(array)];
+    entries = [...new Set(entries)];
 
-    return array.map((e) => ({
+    return entries.map((e) => ({
       city: e.city,
       country: e.data.country,
     }))
@@ -123,16 +118,18 @@ export default class CityList {
   public getLocations(
     query: Query,
   ): LocationType[] {
-    const node = node_get(this.trie, query.city);
+    const querySegments = [...segmenter.segment(query.city)];
 
-    if (node?.datas === undefined) {
+    const node = node_get(this.trie, querySegments);
+
+    if (node?.leaf === undefined) {
       return [];
     }
 
     const country = query.country;
     let datas = country !== undefined
-      ? node.datas.filter((d) => d.country.startsWith(country))
-      : node.datas;
+      ? node.leaf.datas.filter((d) => d.country.startsWith(country))
+      : node.leaf.datas;
 
     datas = datas.toSorted((a, b) => a.population - b.population);
     
@@ -146,58 +143,64 @@ export default class CityList {
     return array.map((d) => ({ lat: d.lat, lon: d.lon }));
   }
 
-  public insert(city: string, data: Data): void {
-    node_insert(this.trie, city, data);
+  public insert(city: string, data: { lat: number; lon: number; country: string, population: number, id: number }): void {
+    const segments = [...segmenter.segment(city)];
+
+    node_insert(this.trie, city, segments, { ...data, city: city });
   }
 }
 
+type TrieLeaf = {
+  city: string;
+  datas: Data[];
+};
+
 type TrieNode = {
-  children: { char: string; node: TrieNode }[];
+  children: { segment: string; lowercase: string; node: TrieNode }[];
 
   /**
    * Contains data if the current node is a valid city.
    * Otherwise, it is undefined.
    */
-  datas: undefined | Data[];
+  leaf: undefined | TrieLeaf;
 };
 
-function node_insert(node: TrieNode, city: string, data: Data): void {
-  if (city.length > 0) {
-    const char = city.charAt(0);
+function node_insert(node: TrieNode, city: string, segments: Intl.SegmentData[], data: Data): void {
+  if (segments.length >= 1) {
+    const segment = segments[0].segment;
 
     for (const child of node.children) {
-      if (child.char == char) {
-        node_insert(child.node, city.slice(1), data);
+      if (child.segment === segment) {
+        node_insert(child.node, city, segments.slice(1), data);
         return;
       }
     }
 
-    const new_node: TrieNode = { children: [], datas: undefined };
-    node.children.push({ char, node: new_node });
-    node_insert(new_node, city.slice(1), data);
+    const new_node: TrieNode = { children: [], leaf: undefined };
+    node.children.push({ segment: segment, lowercase: segment.toLowerCase(), node: new_node });
+    node_insert(new_node, city, segments.slice(1), data);
 
     return;
   }
 
-  if (node.datas === undefined) {
-    node.datas = [data];
-    return;
+  if (node.leaf === undefined) {
+    node.leaf = { city: city, datas: [data] };
   }
-
-  node.datas.push(data);
-  return;
+  else {
+    node.leaf.datas.push(data);
+  }
 }
 
-function node_get(node: TrieNode, query: string): undefined | TrieNode {
-  if (query.length === 0) {
+function node_get(node: TrieNode, segments: Intl.SegmentData[]): undefined | TrieNode {
+  if (segments.length === 0) {
     return node;
   }
 
-  const char = query[0];
+  const lowercase = segments[0].segment.toLowerCase();
 
   for (const child of node.children) {
-    if (child.char == char) {
-      return node_get(child.node, query.slice(1));
+    if (child.lowercase === lowercase) {
+      return node_get(child.node, segments.slice(1));
     }
   }
 
@@ -206,29 +209,24 @@ function node_get(node: TrieNode, query: string): undefined | TrieNode {
 
 type FuzzyEntry = {
   node: TrieNode,
-  city: string,
   score: number,
 };
 
-function node_get_fuzzy(node: TrieNode, query: string, incorrects_left: number, city = "", array: FuzzyEntry[] = [], extra = false): FuzzyEntry[] {
-  if (query.length === 0) {
+function node_get_fuzzy(node: TrieNode, segments: Intl.SegmentData[], incorrects_left: number, array: FuzzyEntry[], extra = false): void {
+  if (segments.length === 0) {
     array.push({
       node: node,
-      city: city,
       score: incorrects_left,
     });
-    return array;
+    return;
   }
 
-  const next_char = query[0].toLowerCase();
+  const lowercase = segments[0].segment.toLowerCase();
 
   for (const child of node.children) {
-    const child_char = child.char.toLowerCase();
-
     // If correct
-    if (child_char == next_char) {
-      node_get_fuzzy(child.node, query.slice(1), incorrects_left, city + child.char, array);
-      return array;
+    if (child.lowercase === lowercase) {
+      node_get_fuzzy(child.node, segments.slice(1), incorrects_left, array);
     }
 
     if (incorrects_left <= 0) {
@@ -236,40 +234,40 @@ function node_get_fuzzy(node: TrieNode, query: string, incorrects_left: number, 
     }
 
     // Assume user typed an extra character
-    if (!extra) {
-      // node_get_fuzzy(node, query.slice(1), incorrects_left - 1, city, array, true);
-    }
+    // if (!extra) {
+    //   node_get_fuzzy(node, query.slice(1), incorrects_left - 1, city, array, true);
+    // }
 
     // Assume user typed incorrect character
-    node_get_fuzzy(child.node, query.slice(1), incorrects_left - 1, city + child.char, array);
+    node_get_fuzzy(child.node, segments.slice(1), incorrects_left - 1, array);
 
     // Assume user skipped a character
     // node_get_fuzzy(child.node, query, incorrects_left - 1, city + child.char, array);
   }
-
-  return array;
 }
 
 function node_get_all_from(
   node: TrieNode,
   compare?: (a: Data, b: Data) => number,
-  predicate?: (entry: CityEntry) => boolean,
+  predicate?: (data: Data) => boolean,
   limit?: number,
-  city = "",
   array: CityEntry[] = [],
-): CityEntry[] {
+): void {
   if (limit !== undefined && array.length >= limit) {
-    return array;
+    return;
   }
 
-  if (node.datas !== undefined) {
-    const datas = compare !== undefined
-      ? node.datas.toSorted(compare)
-      : node.datas;
+  if (node.leaf !== undefined) {
+    const datas = node.leaf.datas;
+    // const datas = compare !== undefined
+    //   ? node.leaf.datas.toSorted(compare)
+    //   : node.leaf.datas;
 
     for (let i = 0; i < datas.length && (limit === undefined || array.length < limit); i++) {
-      if (predicate !== undefined && predicate({ city: city, data: datas[i] })) {
-        array.push({ city: city, data: datas[i] });
+      const data = node.leaf.datas[i];
+
+      if (predicate !== undefined && predicate(data)) {
+        array.push({ city: node.leaf.city, data: data });
       }
     }
   }
@@ -280,10 +278,7 @@ function node_get_all_from(
       compare,
       predicate,
       limit,
-      city + child.char,
       array,
     );
   }
-
-  return array;
 }
