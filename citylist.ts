@@ -101,7 +101,7 @@ export default class CityList {
 
           return true;
         },
-        100,
+        50,
         entries,
       );
     }
@@ -235,14 +235,14 @@ function node_get_fuzzy(node: TrieNode, segments: Intl.SegmentData[], incorrects
 
     // Assume user typed an extra character
     // if (!extra) {
-    //   node_get_fuzzy(node, query.slice(1), incorrects_left - 1, city, array, true);
+    //   node_get_fuzzy(node, segments.slice(1), incorrects_left - 1, array, true);
     // }
 
     // Assume user typed incorrect character
     node_get_fuzzy(child.node, segments.slice(1), incorrects_left - 1, array);
 
     // Assume user skipped a character
-    // node_get_fuzzy(child.node, query, incorrects_left - 1, city + child.char, array);
+    node_get_fuzzy(child.node, segments, incorrects_left - 1, array);
   }
 }
 
