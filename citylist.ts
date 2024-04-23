@@ -1,5 +1,6 @@
 import { LocationType } from "./components/schemas/LocationSchema.ts";
 import { addWorldCities } from "./worldcities.ts";
+import { addDanishCities } from "./danishcities.ts";
 
 let world_cities: CityList | undefined = undefined;
 
@@ -7,6 +8,7 @@ export function getWorldCities(): CityList {
   if (world_cities === undefined) {
     world_cities = new CityList();
     addWorldCities(world_cities);
+    addDanishCities(world_cities);
   }
   return world_cities;
 }
