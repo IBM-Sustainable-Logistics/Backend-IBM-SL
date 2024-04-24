@@ -212,7 +212,7 @@ type FuzzyEntry = {
   score: number,
 };
 
-function node_get_fuzzy(node: TrieNode, segments: Intl.SegmentData[], incorrects_left: number, array: FuzzyEntry[], extra = false): void {
+function node_get_fuzzy(node: TrieNode, segments: Intl.SegmentData[], incorrects_left: number, array: FuzzyEntry[], /*extra = false*/): void {
   if (segments.length === 0) {
     array.push({
       node: node,
@@ -233,7 +233,7 @@ function node_get_fuzzy(node: TrieNode, segments: Intl.SegmentData[], incorrects
       continue;
     }
 
-    // Assume user typed an extra character
+    // Assume user typed an extra character (This is slow)
     // if (!extra) {
     //   node_get_fuzzy(node, segments.slice(1), incorrects_left - 1, array, true);
     // }

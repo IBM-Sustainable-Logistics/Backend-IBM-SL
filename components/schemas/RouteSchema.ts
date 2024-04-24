@@ -43,6 +43,12 @@ const RouteSchema = z.array(
         description: "The address of the destination of this `stage`.",
       }),
   }))
+  .and(z.object({
+    cargo_t: z.optional(z.number()
+      .openapi({
+        description: "The weight of the cargo of this `stage` in tons.",
+      })),
+  }))
   .openapi({
     description: "A `stage` that contains a `transport_form` and either a " +
                  "`distance_km` or `from` and `to`.",
@@ -58,9 +64,9 @@ const RouteSchema = z.array(
       from: { city: "New York", country: "United States" },
       to: { city: "Los Angeles", }
     },
-    { transport_form: "etruck", distance_km: 100 },
-    { transport_form: "train", distance_km: 500 },
-    { transport_form: "aircraft", distance_km: 300 },
+    { transport_form: "etruck", cargo_t: 10, distance_km: 100 },
+    { transport_form: "train", cargo_t: 50, distance_km: 500 },
+    { transport_form: "aircraft", cargo_t: 2, distance_km: 300 },
     { transport_form: "cargoship", distance_km: 300 },
   ],
 });

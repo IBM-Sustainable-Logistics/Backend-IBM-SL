@@ -76,7 +76,7 @@ export async function estimateEmissions(
       const inputStage = inputRoute.stages[stageIndex];
 
       const emissionFactor = emissionFactors[inputStage.transport_form];
-      const cargoWeight = 10;
+      const cargoWeight = inputStage.cargo_t ?? 10;
 
       if ("distance_km" in inputStage) {
         const emission = emissionFactor * inputStage.distance_km * cargoWeight;

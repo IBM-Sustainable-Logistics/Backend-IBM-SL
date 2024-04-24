@@ -20,7 +20,7 @@ export const routeSuggestCities = createRoute({
       "application/json": {
         schema: SuggestionsSchema,
       },
-      description: "TODO: Add description",
+      description: "A list of suggestions for the `city` and `country` fields.",
     },
     400: {
       content: {
@@ -28,8 +28,12 @@ export const routeSuggestCities = createRoute({
           schema: ErrorSchema,
         },
       },
-      description: "Returns and error",
+      description: "Invalid input",
     },
   },
-  description: "TODO: Add description",
+  description:
+    "Accepts an address object which consists of a `city` and a `country` field. " +
+    "The two fields can be incomplete or empty. " +
+    "The response is a list of suggestions for the `city` and `country` fields, " +
+    "where the suggestions strictly matches the start of the input fields.",
 });

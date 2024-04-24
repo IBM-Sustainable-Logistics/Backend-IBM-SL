@@ -21,7 +21,8 @@ const ChainSchema = z.array(
       stages: [
         {
           transport_form: "truck",
-          distance_km: 225
+          cargo_t: 10,
+          distance_km: 225,
         },
         {
           transport_form: "truck",
