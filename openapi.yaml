@@ -31,80 +31,92 @@ paths:
                   stages:
                     type: array
                     items:
-                      anyOf:
+                      allOf:
+                        - anyOf:
+                            - type: object
+                              properties:
+                                transport_form:
+                                  type: string
+                                  enum:
+                                    - truck
+                                    - etruck
+                                    - train
+                                    - aircraft
+                                    - cargoship
+                                  description: >-
+                                    The vehicle type that is used in this
+                                    `stage`.
+                                distance_km:
+                                  type: number
+                                  description: >-
+                                    The distance of this `stage` of the route in
+                                    kilometers.
+                              required:
+                                - transport_form
+                                - distance_km
+                            - type: object
+                              properties:
+                                transport_form:
+                                  type: string
+                                  enum:
+                                    - truck
+                                    - etruck
+                                  description: >-
+                                    The vehicle type that is used in this
+                                    `stage`.
+                                from:
+                                  type: object
+                                  properties:
+                                    city:
+                                      type: string
+                                      description: The city query.
+                                      example: New York
+                                    country:
+                                      type: string
+                                      description: >-
+                                        The country query that the city should
+                                        be in. (Optional)
+                                      example: United States
+                                  required:
+                                    - city
+                                  description: >-
+                                    The address of the starting point of this
+                                    `stage`.
+                                  examples:
+                                    - city: New
+                                    - city: Copen
+                                      country: Denmark
+                                to:
+                                  type: object
+                                  properties:
+                                    city:
+                                      type: string
+                                      description: The city query.
+                                      example: New York
+                                    country:
+                                      type: string
+                                      description: >-
+                                        The country query that the city should
+                                        be in. (Optional)
+                                      example: United States
+                                  required:
+                                    - city
+                                  description: >-
+                                    The address of the destination of this
+                                    `stage`.
+                                  examples:
+                                    - city: New
+                                    - city: Copen
+                                      country: Denmark
+                              required:
+                                - transport_form
+                                - from
+                                - to
                         - type: object
                           properties:
-                            transport_form:
-                              type: string
-                              enum:
-                                - truck
-                                - etruck
-                                - train
-                                - aircraft
-                                - cargoship
-                              description: The vehicle type that is used in this `stage`.
-                            distance_km:
+                            cargo_t:
                               type: number
-                              description: >-
-                                The distance of this `stage` of the route in
-                                kilometers.
-                          required:
-                            - transport_form
-                            - distance_km
-                        - type: object
-                          properties:
-                            transport_form:
-                              type: string
-                              enum:
-                                - truck
-                                - etruck
-                              description: The vehicle type that is used in this `stage`.
-                            from:
-                              type: object
-                              properties:
-                                city:
-                                  type: string
-                                  description: The city query.
-                                  example: New York
-                                country:
-                                  type: string
-                                  description: >-
-                                    The country query that the city should be
-                                    in. (Optional)
-                                  example: United States
-                              required:
-                                - city
-                              description: >-
-                                The address of the starting point of this
-                                `stage`.
-                              examples:
-                                - city: New
-                                - city: Copen
-                                  country: Denmark
-                            to:
-                              type: object
-                              properties:
-                                city:
-                                  type: string
-                                  description: The city query.
-                                  example: New York
-                                country:
-                                  type: string
-                                  description: >-
-                                    The country query that the city should be
-                                    in. (Optional)
-                                  example: United States
-                              required:
-                                - city
-                              description: The address of the destination of this `stage`.
-                              examples:
-                                - city: New
-                                - city: Copen
-                                  country: Denmark
-                          required:
-                            - transport_form
-                            - from
-                            - to
+                              description: The weight of the cargo of this `stage` in tons.
                       description: >-
                         A `stage` that contains a `transport_form` and either a
                         `distance_km` or `from` and `to`.
@@ -124,10 +136,13 @@ paths:
                         to:
                           city: Los Angeles
                       - transport_form: etruck
+                        cargo_t: 10
                         distance_km: 100
                       - transport_form: train
+                        cargo_t: 50
                         distance_km: 500
                       - transport_form: aircraft
+                        cargo_t: 2
                         distance_km: 300
                       - transport_form: cargoship
                         distance_km: 300
@@ -139,6 +154,7 @@ paths:
                 - id: Primary Route
                   stages:
                     - transport_form: truck
+                      cargo_t: 10
                       distance_km: 225
                     - transport_form: truck
                       from:
@@ -228,7 +244,126 @@ paths:
                         - stage_kg: 210
                           transport_form: train
         '400':
-          description: Returns an error
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        enum:
+                          - Could not connect locations
+                      route_id:
+                        type: string
+                        description: A identifier that uniquely identifies a `route`.
+                        example: Route 1
+                      stage_index:
+                        type: number
+                      from:
+                        type: object
+                        properties:
+                          city:
+                            type: string
+                            description: The city query.
+                            example: New York
+                          country:
+                            type: string
+                            description: >-
+                              The country query that the city should be in.
+                              (Optional)
+                            example: United States
+                        required:
+                          - city
+                        description: An address containing a city and optionally a country.
+                        examples:
+                          - city: New
+                          - city: Copen
+                            country: Denmark
+                      to:
+                        type: object
+                        properties:
+                          city:
+                            type: string
+                            description: The city query.
+                            example: New York
+                          country:
+                            type: string
+                            description: >-
+                              The country query that the city should be in.
+                              (Optional)
+                            example: United States
+                        required:
+                          - city
+                        description: An address containing a city and optionally a country.
+                        examples:
+                          - city: New
+                          - city: Copen
+                            country: Denmark
+                    required:
+                      - error
+                      - route_id
+                      - stage_index
+                      - from
+                      - to
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        enum:
+                          - No such address
+                      fromOrTo:
+                        type: string
+                        enum:
+                          - from
+                          - to
+                        description: Specifies if an address is an origin or destination.
+                    required:
+                      - error
+                      - fromOrTo
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        enum:
+                          - Ambiguous address
+                      fromOrTo:
+                        type: string
+                        enum:
+                          - from
+                          - to
+                        description: Specifies if an address is an origin or destination.
+                      addresses:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            city:
+                              type: string
+                              description: The city query.
+                              example: New York
+                            country:
+                              type: string
+                              description: >-
+                                The country query that the city should be in.
+                                (Optional)
+                              example: United States
+                          required:
+                            - city
+                          description: >-
+                            An address containing a city and optionally a
+                            country.
+                          examples:
+                            - city: New
+                            - city: Copen
+                              country: Denmark
+                    required:
+                      - error
+                      - fromOrTo
+                      - addresses
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
@@ -242,40 +377,13 @@ paths:
                 description: An error response.
                 example:
                   error: No results found
-        '500':
-          content:
-            application/json:
-              schema:
-                anyOf:
-                  - type: object
-                    properties:
-                      error:
-                        type: string
-                        example: Error fetching data
-                    required:
-                      - error
-                    description: An error response.
-                    example:
-                      error: No results found
-                  - type: object
-                    properties:
-                      error:
-                        type: string
-                        enum:
-                          - Could not connect locations
-                      route_id:
-                        type: string
-                        description: A identifier that uniquely identifies a `route`.
-                        example: Route 1
-                      stage_index:
-                        type: number
-                    required:
-                      - error
-                      - route_id
-                      - stage_index
   /api/suggest:
     post:
-      description: 'TODO: Add description'
+      description: >-
+        Accepts an address object which consists of a `city` and a `country`
+        field. The two fields can be incomplete or empty. The response is a list
+        of suggestions for the `city` and `country` fields, where the
+        suggestions strictly matches the start of the input fields.
       requestBody:
         content:
           application/json:
@@ -317,9 +425,9 @@ paths:
                 openapi:
                   metadata:
                     description: A list of city suggestions and their countries
-          description: 'TODO: Add description'
+          description: A list of suggestions for the `city` and `country` fields.
         '400':
-          description: Returns and error
+          description: Invalid input
           content:
             application/json:
               schema:
@@ -335,7 +443,11 @@ paths:
                   error: No results found
   /api/fuzzy:
     post:
-      description: 'TODO: Add description'
+      description: >-
+        Accepts an address object which consists of a `city` and a `country`
+        field. The two fields can be incomplete or empty. The response is a list
+        of suggestions for the `city` and `country` fields, where the
+        suggestions loosely matches the input fields.
       requestBody:
         content:
           application/json:
@@ -377,9 +489,9 @@ paths:
                 openapi:
                   metadata:
                     description: A list of city suggestions and their countries
-          description: 'TODO: Add description'
+          description: A list of suggestions for the `city` and `country` fields.
         '400':
-          description: Returns and error
+          description: Invalid input
           content:
             application/json:
               schema:

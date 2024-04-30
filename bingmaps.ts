@@ -10,7 +10,7 @@ export async function getDistance(
   to: LocationType,
 ): Promise<
   | { distance_km: number }
-  | ErrorType & WithStatus<400 | 500>
+  | ErrorType & WithStatus<500>
   | "Could not connect locations"
 > {
   if (bingMapsKey === undefined) {
@@ -29,19 +29,19 @@ export async function getDistance(
 
   const json = await response.json();
 
-  if (json.statusCode !== 200) {
+  if (!response.ok || json.statusCode !== 200) {
     return { status: 500, error: "Error fetching data" };
   }
 
-  if (json.resourceSets[0].estimatedTotal == 0) {
-    return { status: 400, error: "No results found" };
+  if (json.resourceSets[0].estimatedTotal === 0) {
+    return { status: 500, error: "No results found" };
   }
 
   const distance_km =
     json.resourceSets[0].resources[0].results[0].travelDistance;
 
   if (distance_km < 0) {
-    return "Could not connect locations";
+      return "Could not connect locations";
   }
 
   return { distance_km: distance_km };

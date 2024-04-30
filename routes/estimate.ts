@@ -28,7 +28,7 @@ export const chainEstimateEmissions = createRoute({
     400: {
       content: {
         "application/json": {
-          schema: ErrorSchema,
+          schema: EstimationErrorSchema,
         },
       },
       description: "Invalid input",
@@ -36,7 +36,7 @@ export const chainEstimateEmissions = createRoute({
     500: {
       content: {
         "application/json": {
-          schema: EstimationErrorSchema,
+          schema: ErrorSchema,
         },
       },
       description: "Internal server error",

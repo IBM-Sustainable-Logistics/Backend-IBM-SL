@@ -10,7 +10,7 @@ const transportForms = [
 ] as const;
 
 export const TruckFormEnum =
-  z.enum(["truck", "etruck"])
+  z.enum(truckForms)
   .openapi({
     description: "The vehicle type that is used in this `stage`.",
   });

@@ -1,17 +1,20 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
-import ErrorSchema from "./ErrorSchema.ts";
+import { LocationErrorSchema } from "./LocationSchema.ts";
 import { TransportFormEnum } from "./RouteSchema.ts";
 import { RouteId } from "./ChainSchema.ts";
+import AddressSchema from "./AddressSchema.ts";
 
 export const ImpossibleStageError = z.object({
   error: z.literal("Could not connect locations"),
   route_id: RouteId,
   stage_index: z.number(),
+  from: AddressSchema,
+  to: AddressSchema,
 });
 
 export type ImpossibleStageType = z.infer<typeof ImpossibleStageError>;
 
-export const EstimationErrorSchema = ErrorSchema.or(ImpossibleStageError);
+export const EstimationErrorSchema = ImpossibleStageError.or(LocationErrorSchema);
 
 export type EstimationErrorType = z.infer<typeof EstimationErrorSchema>;
 

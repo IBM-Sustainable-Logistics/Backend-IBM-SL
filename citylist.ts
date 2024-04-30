@@ -17,7 +17,7 @@ export function getWorldCities(): CityList {
 }
 
 type Query = { city: string; country?: string };
-type Suggestion = { city: string; country: string };
+type Address = { city: string; country: string };
 type Data = {
   id: number;
   city: string;
@@ -35,7 +35,7 @@ export default class CityList {
     this.trie = { children: [], leaf: undefined };
   }
 
-  public getAutoSuggestions(query: Query): Suggestion[] {
+  public getAutoSuggestions(query: Query): Address[] {
     const queryCountry = query.country;
 
     const querySegments = [...segmenter.segment(query.city)];
@@ -71,7 +71,7 @@ export default class CityList {
     }));
   }
 
-  public getAutoSuggestionsFuzzy(query: Query): Suggestion[] {
+  public getAutoSuggestionsFuzzy(query: Query): Address[] {
     const queryCountry = query.country;
 
     const querySegments = [...segmenter.segment(query.city)];
@@ -117,7 +117,7 @@ export default class CityList {
 
   public getLocations(
     query: Query,
-  ): LocationType[] {
+  ): { address: Address, location: LocationType }[] {
     const querySegments = [...segmenter.segment(query.city)];
 
     const node = node_get(this.trie, querySegments);
@@ -140,7 +140,10 @@ export default class CityList {
       array.push(data);
     }
 
-    return array.map((d) => ({ lat: d.lat, lon: d.lon }));
+    return array.map((d) => ({
+      address: { city: d.city, country: d.country },
+      location: { lat: d.lat, lon: d.lon },
+    }));
   }
 
   public insert(city: string, data: { lat: number; lon: number; country: string, population: number, id: number }): void {

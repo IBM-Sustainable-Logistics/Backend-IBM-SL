@@ -2,13 +2,13 @@ import { ErrorType, WithStatus } from "./components/schemas/ErrorSchema.ts";
 import { TransportForm } from "./components/schemas/RouteSchema.ts";
 import { ChainType } from "./components/schemas/ChainSchema.ts";
 import {
+  EstimationErrorType,
   EstimationsType,
 } from "./components/schemas/EstimationsSchema.ts";
-import { AddressType } from "./components/schemas/AddressSchema.ts";
-import { LocationType } from "./components/schemas/LocationSchema.ts";
+import { AddressType, FromOrToType } from "./components/schemas/AddressSchema.ts";
+import { LocationErrorType, LocationType } from "./components/schemas/LocationSchema.ts";
 import { getDistance } from "./bingmaps.ts";
 import { getWorldCities } from "./citylist.ts";
-import { ImpossibleStageType } from "./components/schemas/EstimationsSchema.ts";
 
 // Emission factors use the unit kg CO2e per km for 1 ton of cargo.
 const emissionFactors: { [key in TransportForm]: number } = {
@@ -57,8 +57,8 @@ export async function estimateEmissions(
   input: ChainType,
 ): Promise<
   | EstimationsType
-  | ErrorType & WithStatus<400 | 500>
-  | ImpossibleStageType & WithStatus<400>
+  | ErrorType & WithStatus<500>
+  | EstimationErrorType & WithStatus<400>
 > {
   const outputChain: Chain = { chain_kg: 0, routes: [] };
 
@@ -98,7 +98,7 @@ export async function estimateEmissions(
           return to;
         }
 
-        const response = await getDistance(from, to);
+        const response = await getDistance(from.location, to.location);
 
         if (response === "Could not connect locations") {
           return {
@@ -106,6 +106,8 @@ export async function estimateEmissions(
             error: response,
             route_id: inputRoute.id,
             stage_index: stageIndex,
+            from: from.address,
+            to: to.address,
           };
         }
 
@@ -133,24 +135,26 @@ export async function estimateEmissions(
 
 function getLocation(
   address: AddressType,
-  label: string,
-): LocationType | ErrorType & WithStatus<400> {
-  const locations = getWorldCities().getLocations(address);
+  label: FromOrToType,
+): { address: AddressType, location: LocationType } | LocationErrorType & WithStatus<400> {
+  const results = getWorldCities().getLocations(address);
 
-  if (locations.length === 0) {
+  if (results.length === 0) {
     return {
       status: 400,
-      error: "No such '" + label + "' address",
+      error: "No such address",
+      fromOrTo: label,
     };
   }
 
-  if (locations.length > 1) {
+  if (results.length > 1) {
     return {
       status: 400,
-      error: "Multiple cities found for '" + label +
-        "', please specify country.",
+      error: "Ambiguous address",
+      fromOrTo: label,
+      addresses: results.map((result) => result.address),
     };
   }
 
-  return locations[0];
+  return results[0];
 }

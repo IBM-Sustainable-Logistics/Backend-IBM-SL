@@ -1,5 +1,17 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 
+const fromOrTo = [
+  "from", "to",
+] as const;
+
+export const FromOrToSchema =
+  z.enum(fromOrTo)
+  .openapi({
+    description: "Specifies if an address is an origin or destination.",
+  });
+
+export type FromOrToType = z.infer<typeof FromOrToSchema>;
+
 const AddressSchema = z.object({
   city: z.string()
     .openapi({
