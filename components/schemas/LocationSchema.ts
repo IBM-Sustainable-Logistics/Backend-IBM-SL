@@ -1,9 +1,12 @@
 import { z } from "npm:@hono/zod-openapi@0.9.5";
 import { FromOrToSchema } from "./AddressSchema.ts";
 import AddressSchema from "./AddressSchema.ts";
+import { RouteId } from "./ChainSchema.ts";
 
 export const NoSuchAddressError = z.object({
   error: z.literal("No such address"),
+  route_id: RouteId,
+  stage_index: z.number(),
   fromOrTo: FromOrToSchema,
 });
 
@@ -11,6 +14,8 @@ export type NoSuchAddressType = z.infer<typeof NoSuchAddressError>;
 
 export const AmbiguousAddressError = z.object({
   error: z.literal("Ambiguous address"),
+  route_id: RouteId,
+  stage_index: z.number(),
   fromOrTo: FromOrToSchema,
   addresses: z.array(AddressSchema),
 });

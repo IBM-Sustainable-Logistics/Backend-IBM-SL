@@ -313,6 +313,12 @@ paths:
                         type: string
                         enum:
                           - No such address
+                      route_id:
+                        type: string
+                        description: A identifier that uniquely identifies a `route`.
+                        example: Route 1
+                      stage_index:
+                        type: number
                       fromOrTo:
                         type: string
                         enum:
@@ -321,6 +327,8 @@ paths:
                         description: Specifies if an address is an origin or destination.
                     required:
                       - error
+                      - route_id
+                      - stage_index
                       - fromOrTo
                   - type: object
                     properties:
@@ -328,6 +336,12 @@ paths:
                         type: string
                         enum:
                           - Ambiguous address
+                      route_id:
+                        type: string
+                        description: A identifier that uniquely identifies a `route`.
+                        example: Route 1
+                      stage_index:
+                        type: number
                       fromOrTo:
                         type: string
                         enum:
@@ -360,6 +374,8 @@ paths:
                               country: Denmark
                     required:
                       - error
+                      - route_id
+                      - stage_index
                       - fromOrTo
                       - addresses
         '500':

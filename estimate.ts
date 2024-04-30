@@ -5,8 +5,11 @@ import {
   EstimationErrorType,
   EstimationsType,
 } from "./components/schemas/EstimationsSchema.ts";
-import { AddressType, FromOrToType } from "./components/schemas/AddressSchema.ts";
-import { LocationErrorType, LocationType } from "./components/schemas/LocationSchema.ts";
+import {
+  AddressType,
+  FromOrToType,
+} from "./components/schemas/AddressSchema.ts";
+import { LocationType } from "./components/schemas/LocationSchema.ts";
 import { getDistance } from "./bingmaps.ts";
 import { getWorldCities } from "./citylist.ts";
 
@@ -90,12 +93,20 @@ export async function estimateEmissions(
       } else {
         const from = getLocation(inputStage.from, "from");
         if ("error" in from) {
-          return from;
+          return {
+            ...from,
+            route_id: inputRoute.id,
+            stage_index: stageIndex,
+          };
         }
 
         const to = getLocation(inputStage.to, "to");
         if ("error" in to) {
-          return to;
+          return {
+            ...to,
+            route_id: inputRoute.id,
+            stage_index: stageIndex,
+          };
         }
 
         const response = await getDistance(from.location, to.location);
@@ -136,7 +147,14 @@ export async function estimateEmissions(
 function getLocation(
   address: AddressType,
   label: FromOrToType,
-): { address: AddressType, location: LocationType } | LocationErrorType & WithStatus<400> {
+):
+  | { address: AddressType; location: LocationType }
+  | ({ error: "No such address" } | {
+    error: "Ambiguous address";
+    addresses: AddressType[];
+  })
+    & { fromOrTo: FromOrToType }
+    & WithStatus<400> {
   const results = getWorldCities().getLocations(address);
 
   if (results.length === 0) {
@@ -149,10 +167,10 @@ function getLocation(
 
   if (results.length > 1) {
     return {
-      status: 400,
-      error: "Ambiguous address",
+      status: 400 as const,
+      error: "Ambiguous address" as const,
       fromOrTo: label,
-      addresses: results.map((result) => result.address),
+      addresses: results.map<AddressType>((result) => result.address),
     };
   }
 
