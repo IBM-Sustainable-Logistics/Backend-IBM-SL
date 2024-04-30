@@ -163,6 +163,31 @@ Deno.test("estimate impossible route", { permissions: { read: true, net: true } 
       error: "Could not connect locations",
       route_id: "Impossible Route",
       stage_index: 1,
+      from: { city: "Copenhagen", country: "Denmark" },
+      to: { city: "Sydney", country: "Australia" },
+    }
+  )
+);
+
+Deno.test("estimate no such address", { permissions: { read: true, net: true } }, async () =>
+  assertEquals(await estimateEmissions([
+    {
+      id: "Invalid Address Route",
+      stages: [
+        {
+          transport_form: "truck",
+          from: { city: "New" },
+          to: { city: "New York", country: "United States" },
+        },
+      ],
+    }
+  ]),
+    {
+      status: 400,
+      error: "No such address",
+      route_id: "Invalid Address Route",
+      stage_index: 0,
+      fromOrTo: "from",
     }
   )
 );
