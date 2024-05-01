@@ -43,7 +43,11 @@ const emissionFactors: { [key in TransportForm]: number } = {
 type Stage = {
   stage_kg: number;
   transport_form: TransportForm;
+  distance_km: number;
+  cargo_t: number;
 };
+
+const defaultWeight = 10;
 
 type Route = {
   id: string;
@@ -79,8 +83,9 @@ export async function estimateEmissions(
       const inputStage = inputRoute.stages[stageIndex];
 
       const emissionFactor = emissionFactors[inputStage.transport_form];
-      const cargoWeight = inputStage.cargo_t ?? 10;
+      const cargoWeight = inputStage.cargo_t ?? defaultWeight;
 
+      // ---------- When using distances ----------
       if ("distance_km" in inputStage) {
         const emission = emissionFactor * inputStage.distance_km * cargoWeight;
         outputChain.chain_kg += emission;
@@ -89,8 +94,13 @@ export async function estimateEmissions(
         outputRoute.stages.push({
           stage_kg: Math.round(emission),
           transport_form: inputStage.transport_form,
+          distance_km: inputStage.distance_km,
+          cargo_t: inputStage.cargo_t ?? defaultWeight,
         });
-      } else {
+      }
+
+      // ---------- When using addresses ----------
+      else {
         const from = getLocation(inputStage.from, "from");
         if ("error" in from) {
           return {
@@ -133,6 +143,8 @@ export async function estimateEmissions(
         outputRoute.stages.push({
           stage_kg: Math.round(emission),
           transport_form: inputStage.transport_form,
+          distance_km: response.distance_km,
+          cargo_t: inputStage.cargo_t ?? defaultWeight,
         });
       }
     }
@@ -170,7 +182,7 @@ function getLocation(
       status: 400 as const,
       error: "Ambiguous address" as const,
       fromOrTo: label,
-      addresses: results.map<AddressType>((result) => result.address),
+      addresses: results.map((result) => result.address),
     };
   }
 

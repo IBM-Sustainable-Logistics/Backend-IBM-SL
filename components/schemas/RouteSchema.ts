@@ -24,6 +24,18 @@ export const TransportFormEnum =
 export type TruckForm = z.infer<typeof TruckFormEnum>;
 export type TransportForm = z.infer<typeof TransportFormEnum>;
 
+export const CargoWeightSchema =
+  z.number()
+  .openapi({
+    description: "The weight of the cargo of this `stage` in tons.",
+  })
+
+export const DistanceSchema =
+  z.number()
+  .openapi({
+    description: "The distance of this `stage` of the route in kilometers.",
+  })
+
 const RouteSchema = z.array(
   z.object({
     transport_form: TransportFormEnum,
@@ -44,10 +56,7 @@ const RouteSchema = z.array(
       }),
   }))
   .and(z.object({
-    cargo_t: z.optional(z.number()
-      .openapi({
-        description: "The weight of the cargo of this `stage` in tons.",
-      })),
+    cargo_t: z.optional(CargoWeightSchema),
   }))
   .openapi({
     description: "A `stage` that contains a `transport_form` and either a " +

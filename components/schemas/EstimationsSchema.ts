@@ -3,6 +3,8 @@ import { LocationErrorSchema } from "./LocationSchema.ts";
 import { TransportFormEnum } from "./RouteSchema.ts";
 import { RouteId } from "./ChainSchema.ts";
 import AddressSchema from "./AddressSchema.ts";
+import { CargoWeightSchema } from "./RouteSchema.ts";
+import { DistanceSchema } from "./RouteSchema.ts";
 
 export const ImpossibleStageError = z.object({
   error: z.literal("Could not connect locations"),
@@ -37,6 +39,8 @@ const EstimationsSchema = z.object({
             description: "The estimated emissions for this `stage`.",
           }),
         transport_form: TransportFormEnum,
+        distance_km: DistanceSchema,
+        cargo_t: CargoWeightSchema,
     })),
   })),
 })
@@ -53,19 +57,19 @@ const EstimationsSchema = z.object({
         id: "Primary Route",
         route_kg: 6713,
         stages: [
-          { stage_kg: 105, transport_form: "truck" },
-          { stage_kg: 4713, transport_form: "truck" },
-          { stage_kg: 70, transport_form: "etruck" },
-          { stage_kg: 325, transport_form: "train" },
-          { stage_kg: 1500, transport_form: "aircraft" },
+          { stage_kg: 105, transport_form: "truck", distance_km: 10, cargo_t: 15 },
+          { stage_kg: 4713, transport_form: "truck", distance_km: 135, cargo_t: 22 },
+          { stage_kg: 70, transport_form: "etruck", distance_km: 21, cargo_t: 3 },
+          { stage_kg: 325, transport_form: "train", distance_km: 135, cargo_t: 28 },
+          { stage_kg: 1500, transport_form: "aircraft", distance_km: 210, cargo_t: 6 },
         ],
       },
       {
         id: "Secondary Route",
         route_kg: 344,
         stages: [
-          { stage_kg: 134, transport_form: "etruck" },
-          { stage_kg: 210, transport_form: "train" },
+          { stage_kg: 134, transport_form: "etruck", distance_km: 23, cargo_t: 6 },
+          { stage_kg: 210, transport_form: "train", distance_km: 78, cargo_t: 40 },
         ],
       },
     ]
